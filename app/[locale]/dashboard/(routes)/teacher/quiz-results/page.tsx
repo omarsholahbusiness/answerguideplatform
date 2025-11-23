@@ -317,7 +317,6 @@ const QuizResultsContent = () => {
                                                 <Eye className="h-4 w-4 mr-2" />
                                                 تفاصيل
                                             </Button>
-                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );
