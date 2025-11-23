@@ -28,7 +28,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <LocaleHTML />
+      <LocaleHTML locale={resolvedLocale} />
       <Providers>
         <div className={`min-h-screen flex flex-col ${isRTL ? "font-playpen-sans-arabic" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
           <main className="flex-1">

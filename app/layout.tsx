@@ -25,6 +25,11 @@ const playpenSansArabic = localFont({
 export const metadata: Metadata = {
   title: "Answer Guide Platform",
   description: "Educational platform",
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
