@@ -348,7 +348,7 @@ const QuizResultsPage = () => {
     return (
         <Suspense fallback={
             <div className="p-6">
-                <div className="text-center">{t("loading")}</div>
+                <div className="text-center">جاري التحميل...</div>
             </div>
         }>
             <QuizResultsContent />
