@@ -15,6 +15,23 @@ function createPrismaClient() {
     const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
     const databaseUrl = process.env.DATABASE_URL;
 
+    // Check if we're in a build context (Vercel sets VERCEL=1 during builds)
+    const isBuildContext = process.env.VERCEL === '1' && process.env.VERCEL_ENV !== 'production';
+    const isNextBuild = process.env.NEXT_PHASE === 'phase-production-build';
+
+    // During build, if no database URL is provided, use a placeholder
+    // This allows the build to complete, but the app will need env vars at runtime
+    if ((isBuildContext || isNextBuild) && !databaseUrl && !directDatabaseUrl && !accelerateUrl) {
+        // Use a dummy connection string that Prisma will accept but won't actually connect
+        // This is only for build-time - runtime will require real env vars
+        return new PrismaClientNode({
+            datasources: {
+                db: { url: "postgresql://user:password@localhost:5432/db?schema=public" },
+            },
+            log: [],
+        }) as any;
+    }
+
     if (accelerateUrl) {
         return new PrismaClientEdge({
             datasourceUrl: accelerateUrl,
