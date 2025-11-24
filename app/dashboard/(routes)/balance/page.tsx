@@ -132,7 +132,7 @@ export default function BalancePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-[#0083d3]">
+          <div className="text-3xl font-bold text-[#005bd3]">
             {balance.toFixed(2)} {t("egp")}
           </div>
         </CardContent>
@@ -153,12 +153,12 @@ export default function BalancePage() {
           {/* Vodafone Cash */}
           <div className="p-4 border rounded-lg bg-card hover:bg-accent/5 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-[#0083d3]/10 rounded-full">
-                <CreditCard className="h-5 w-5 text-[#0083d3]" />
+              <div className="p-2 bg-[#005bd3]/10 rounded-full">
+                <CreditCard className="h-5 w-5 text-[#005bd3]" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1">{t("vodafoneCash")}</h3>
-                <p className="text-2xl font-bold text-[#0083d3] mb-2" dir="ltr">01095968792</p>
+                <p className="text-2xl font-bold text-[#005bd3] mb-2" dir="ltr">01095968792</p>
                 <p className="text-sm text-muted-foreground">
                   {t("transferAmount")}
                 </p>
@@ -167,19 +167,19 @@ export default function BalancePage() {
           </div>
 
           {/* Confirmation Instructions */}
-          <div className="p-4 border-2 border-[#0083d3]/20 rounded-lg bg-[#0083d3]/5">
+          <div className="p-4 border-2 border-[#005bd3]/20 rounded-lg bg-[#005bd3]/5">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-[#0083d3]/10 rounded-full">
-                <Send className="h-5 w-5 text-[#0083d3]" />
+              <div className="p-2 bg-[#005bd3]/10 rounded-full">
+                <Send className="h-5 w-5 text-[#005bd3]" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-2 text-[#0083d3]">{t("paymentConfirmation")}</h3>
+                <h3 className="font-semibold text-lg mb-2 text-[#005bd3]">{t("paymentConfirmation")}</h3>
                 <p className="text-sm mb-3">
                   {t("afterTransferInstructions")}
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#0083d3]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#005bd3]"></div>
                     <span className="font-semibold" dir="ltr">01095968792</span>
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function BalancePage() {
               <Button 
                 onClick={handleAddBalance}
                 disabled={isLoading}
-                className="bg-[#0083d3] hover:bg-[#0083d3]/90"
+                className="bg-[#005bd3] hover:bg-[#005bd3]/90"
               >
                 {isLoading ? t("addingBalance") : t("addBalanceButton")}
               </Button>
@@ -238,7 +238,7 @@ export default function BalancePage() {
         <CardContent>
           {isLoadingTransactions ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0083d3] mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005bd3] mx-auto"></div>
               <p className="mt-2 text-muted-foreground">{t("loading")}</p>
             </div>
           ) : transactions.length === 0 ? (

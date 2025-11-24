@@ -33,8 +33,8 @@ export const Footer = () => {
             ? isRTL ? 'md:pr-56 lg:pr-80' : 'md:pl-56 lg:pl-80'
             : ''
         }`}>
-          <div className="inline-block bg-[#0083d3]/10 border-2 border-[#0083d3]/20 rounded-lg px-6 py-3 mb-4">
-            <p className="font-semibold text-lg text-[#0083d3]">{t("technicalSupport")}: 01005224432</p>
+          <div className="inline-block bg-[#005bd3]/10 border-2 border-[#005bd3]/20 rounded-lg px-6 py-3 mb-4">
+            <p className="font-semibold text-lg text-[#005bd3]">{t("technicalSupport")}: 01005224432</p>
           </div>
           
           <p>© {new Date().getFullYear()} Mordesu Studio. {t("allRightsReserved")}</p>

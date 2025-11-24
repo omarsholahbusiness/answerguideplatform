@@ -343,7 +343,7 @@ const CoursesPage = async () => {
                   </div>
                   
                   <Button 
-                    className="w-full bg-[#0083d3] hover:bg-[#0083d3]/90 text-white" 
+                    className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white" 
                     size="lg"
                     asChild
                   >
@@ -447,12 +447,12 @@ const CoursesPage = async () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground font-medium">التقدم</span>
-                      <span className="font-bold text-[#0083d3]">{Math.round(course.progress)}%</span>
+                      <span className="font-bold text-[#005bd3]">{Math.round(course.progress)}%</span>
                     </div>
                     <div className="relative">
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div 
-                          className="bg-gradient-to-r from-[#0083d3] to-[#0083d3]/80 h-3 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-[#005bd3] to-[#005bd3]/80 h-3 rounded-full transition-all duration-300"
                           style={{ width: `${course.progress}%` }}
                         ></div>
                       </div>
@@ -460,7 +460,7 @@ const CoursesPage = async () => {
                   </div>
                   
                   <Button 
-                    className="w-full bg-[#0083d3] hover:bg-[#0083d3]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                    className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
                     variant="default"
                     asChild
                   >
@@ -479,7 +479,7 @@ const CoursesPage = async () => {
               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">لم تقم بشراء أي كورسات بعد</h3>
               <p className="text-muted-foreground mb-6">ابدأ رحلة التعلم بشراء أول كورس لك</p>
-              <Button asChild className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white font-semibold">
+              <Button asChild className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white font-semibold">
                 <Link href="/dashboard/search">
                   استكشف الكورسات المتاحة
                 </Link>

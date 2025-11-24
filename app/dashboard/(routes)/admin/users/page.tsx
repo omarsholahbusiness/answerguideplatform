@@ -292,15 +292,15 @@ const UsersPage = () => {
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>تعديل المستخدم</DialogTitle>
+                                                            <DialogTitle>{t("editUser") || "تعديل المستخدم"}</DialogTitle>
                                                             <DialogDescription>
-                                                                قم بتعديل معلومات المستخدم
+                                                                {t("editUserDescription") || "قم بتعديل معلومات المستخدم"}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <div className="grid gap-4 py-4">
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="fullName" className="text-right">
-                                                                    الاسم
+                                                                <Label htmlFor="fullName" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("fullName")}
                                                                 </Label>
                                                                 <Input
                                                                     id="fullName"
@@ -310,8 +310,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="phoneNumber" className="text-right">
-                                                                    رقم الهاتف
+                                                                <Label htmlFor="phoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("phoneNumber")}
                                                                 </Label>
                                                                 <Input
                                                                     id="phoneNumber"
@@ -321,8 +321,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="parentPhoneNumber" className="text-right">
-                                                                    رقم هاتف الوالد
+                                                                <Label htmlFor="parentPhoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("parentPhone")}
                                                                 </Label>
                                                                 <Input
                                                                     id="parentPhoneNumber"
@@ -333,14 +333,22 @@ const UsersPage = () => {
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
                                                                 <Label htmlFor="role" className="text-right">
-                                                                    الدور
+                                                                    {t("role")}
                                                                 </Label>
-                                                                <Input
-                                                                    id="role"
-                                                                    value={editData.role === "USER" ? "طالب" : editData.role === "TEACHER" ? "معلم" : "مشرف"}
-                                                                    disabled
-                                                                    className="col-span-3 bg-muted"
-                                                                />
+                                                                <Select
+                                                                    value={editData.role}
+                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
+                                                                    className="col-span-3"
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder={t("selectRole") || "اختر الدور"} />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="USER">{t("student")}</SelectItem>
+                                                                        <SelectItem value="TEACHER">{t("teacher")}</SelectItem>
+                                                                        <SelectItem value="ADMIN">{t("admin")}</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>
@@ -348,10 +356,10 @@ const UsersPage = () => {
                                                                 setIsEditDialogOpen(false);
                                                                 setEditingUser(null);
                                                             }}>
-                                                                إلغاء
+                                                                {t("cancel")}
                                                             </Button>
                                                             <Button onClick={handleSaveUser}>
-                                                                حفظ التغييرات
+                                                                {t("saveChanges") || "حفظ التغييرات"}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>
@@ -471,15 +479,15 @@ const UsersPage = () => {
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>تعديل المستخدم</DialogTitle>
+                                                            <DialogTitle>{t("editUser") || "تعديل المستخدم"}</DialogTitle>
                                                             <DialogDescription>
-                                                                قم بتعديل معلومات المستخدم
+                                                                {t("editUserDescription") || "قم بتعديل معلومات المستخدم"}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <div className="grid gap-4 py-4">
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="fullName" className="text-right">
-                                                                    الاسم
+                                                                <Label htmlFor="fullName" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("fullName")}
                                                                 </Label>
                                                                 <Input
                                                                     id="fullName"
@@ -489,8 +497,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="phoneNumber" className="text-right">
-                                                                    رقم الهاتف
+                                                                <Label htmlFor="phoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("phoneNumber")}
                                                                 </Label>
                                                                 <Input
                                                                     id="phoneNumber"
@@ -500,8 +508,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="parentPhoneNumber" className="text-right">
-                                                                    رقم هاتف الوالد
+                                                                <Label htmlFor="parentPhoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t("parentPhone")}
                                                                 </Label>
                                                                 <Input
                                                                     id="parentPhoneNumber"
@@ -512,14 +520,22 @@ const UsersPage = () => {
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
                                                                 <Label htmlFor="role" className="text-right">
-                                                                    الدور
+                                                                    {t("role")}
                                                                 </Label>
-                                                                <Input
-                                                                    id="role"
-                                                                    value={editData.role === "USER" ? "طالب" : editData.role === "TEACHER" ? "معلم" : "مشرف"}
-                                                                    disabled
-                                                                    className="col-span-3 bg-muted"
-                                                                />
+                                                                <Select
+                                                                    value={editData.role}
+                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
+                                                                    className="col-span-3"
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder={t("selectRole") || "اختر الدور"} />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="USER">{t("student")}</SelectItem>
+                                                                        <SelectItem value="TEACHER">{t("teacher")}</SelectItem>
+                                                                        <SelectItem value="ADMIN">{t("admin")}</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>
@@ -527,10 +543,10 @@ const UsersPage = () => {
                                                                 setIsEditDialogOpen(false);
                                                                 setEditingUser(null);
                                                             }}>
-                                                                إلغاء
+                                                                {t("cancel")}
                                                             </Button>
                                                             <Button onClick={handleSaveUser}>
-                                                                حفظ التغييرات
+                                                                {t("saveChanges") || "حفظ التغييرات"}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>

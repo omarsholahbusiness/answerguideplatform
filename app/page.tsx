@@ -101,7 +101,7 @@ export default function HomePage() {
       <Navbar />
       <ScrollProgress />
       {/* Hero Section */}
-      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 md:pt-0 bg-gradient-to-t from-[#0083d3]/25 via-[#0083d3]/10 to-transparent">
+      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 md:pt-0 bg-gradient-to-t from-[#005bd3]/25 via-[#005bd3]/10 to-transparent">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 items-center">
           {/* Image Section - First on mobile */}
           <motion.div
@@ -116,7 +116,7 @@ export default function HomePage() {
                 alt="مصطفي صلاح"
                 fill
                 priority
-                className="object-cover object-[center_25%] rounded-full border-4 border-[#0083d3]/20 shadow-lg"
+                className="object-cover object-[center_25%] rounded-full border-4 border-[#005bd3]/20 shadow-lg"
                 sizes="(max-width: 768px) 256px, 320px"
               />
             </div>
@@ -235,7 +235,7 @@ export default function HomePage() {
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
               {t("tagline")}
             </p>
-            <Button size="lg" asChild className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white">
+            <Button size="lg" asChild className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white">
               <Link href="/sign-up">
                 {t("startNow")} <ArrowRight className={isRTL ? "mr-2 h-4 w-4" : "ml-2 h-4 w-4 rotate-180"} />
               </Link>
@@ -332,7 +332,7 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       asChild
-                      className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white border-[#0083d3]"
+                      className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white border-[#005bd3]"
                     >
                       <Link href="/sign-up">
                         {t("registerEarlyAccess")}
@@ -379,7 +379,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <Button 
-                        className="w-full bg-[#0083d3] hover:bg-[#0083d3]/90 text-white" 
+                        className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white" 
                         variant="default"
                         asChild
                       >
@@ -497,8 +497,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
             >
-              <div className="w-12 h-12 bg-[#0083d3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="h-6 w-6 text-[#0083d3]" />
+              <div className="w-12 h-12 bg-[#005bd3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-6 w-6 text-[#005bd3]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">{t("highQuality")}</h3>
               <p className="text-muted-foreground">{t("highQualityDesc")}</p>
@@ -511,8 +511,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
             >
-              <div className="w-12 h-12 bg-[#0083d3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-6 w-6 text-[#0083d3]" />
+              <div className="w-12 h-12 bg-[#005bd3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-6 w-6 text-[#005bd3]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">{t("activeCommunity")}</h3>
               <p className="text-muted-foreground">{t("activeCommunityDesc")}</p>
@@ -525,8 +525,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
             >
-              <div className="w-12 h-12 bg-[#0083d3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-6 w-6 text-[#0083d3]" />
+              <div className="w-12 h-12 bg-[#005bd3]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-6 w-6 text-[#005bd3]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">{t("certificates")}</h3>
               <p className="text-muted-foreground">{t("certificatesDesc")}</p>
@@ -549,7 +549,7 @@ export default function HomePage() {
             <p className="text-muted-foreground mb-8">
               {t("joinToday")}
             </p>
-            <Button size="lg" asChild className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white">
+            <Button size="lg" asChild className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white">
               <Link href="/sign-up">
                 {t("registerNow")} <ArrowRight className={isRTL ? "mr-2 h-4 w-4" : "ml-2 h-4 w-4 rotate-180"} />
               </Link>

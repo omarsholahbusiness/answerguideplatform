@@ -171,7 +171,7 @@ export default function PurchasePage({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0083d3]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005bd3]"></div>
       </div>
     );
   }
@@ -240,7 +240,7 @@ export default function PurchasePage({
                       </span>
                     </div>
                   )}
-                  <div className="text-2xl font-bold text-[#0083d3]">
+                  <div className="text-2xl font-bold text-[#005bd3]">
                     {finalPrice.toFixed(2)} جنيه
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export default function PurchasePage({
             </CardHeader>
             <CardContent>
               {isLoadingBalance ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0083d3]"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#005bd3]"></div>
               ) : (
                 <div className="space-y-2">
                   <div className="text-xl font-bold">
@@ -346,7 +346,7 @@ export default function PurchasePage({
                   <p className="text-amber-700 mb-4">
                     تحتاج إلى {(finalPrice - userBalance).toFixed(2)} جنيه إضافية لشراء هذه الكورس
                   </p>
-                  <Button asChild className="bg-[#0083d3] hover:bg-[#0083d3]/90">
+                  <Button asChild className="bg-[#005bd3] hover:bg-[#005bd3]/90">
                     <Link href="/dashboard/balance">إضافة رصيد</Link>
                   </Button>
                 </CardContent>
@@ -356,7 +356,7 @@ export default function PurchasePage({
             <Button
               onClick={handlePurchase}
               disabled={isPurchasing || !hasSufficientBalance}
-              className="w-full bg-[#0083d3] hover:bg-[#0083d3]/90 text-white"
+              className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
               size="lg"
             >
               {isPurchasing ? (

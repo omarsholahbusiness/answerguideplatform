@@ -52,10 +52,10 @@ export const Navbar = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 hover:bg-[#0083d3]/10"
+                  className="h-9 w-9 p-0 hover:bg-[#005bd3]/10"
                   title={language === "ar" ? "Change Language" : "تغيير اللغة"}
                 >
-                  <Globe className="h-5 w-5 text-[#0083d3]" />
+                  <Globe className="h-5 w-5 text-[#005bd3]" />
                   <span className="sr-only">Change language</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -79,14 +79,14 @@ export const Navbar = () => {
 
             {!session ? (
               <>
-                <Button className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white" asChild>
+                <Button className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white" asChild>
                   <Link href="/sign-up">{t("signUp")}</Link>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   asChild
-                  className="border-[#0083d3] text-[#0083d3] hover:bg-[#0083d3]/10"
+                  className="border-[#005bd3] text-[#005bd3] hover:bg-[#005bd3]/10"
                 >
                   <Link href="/sign-in">{t("signIn")}</Link>
                 </Button>

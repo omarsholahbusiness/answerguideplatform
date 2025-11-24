@@ -202,7 +202,7 @@ export default function QuizPage({
     if (loading && !redirectToResult) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0083d3]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005bd3]"></div>
             </div>
         );
     }
@@ -211,7 +211,7 @@ export default function QuizPage({
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0083d3] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005bd3] mx-auto mb-4"></div>
                     <p className="text-muted-foreground">{t("loadingResult")}</p>
                 </div>
             </div>
@@ -274,7 +274,7 @@ export default function QuizPage({
                             <div className="space-y-3">
                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div 
-                                        className="bg-[#0083d3] h-2 rounded-full transition-all duration-300"
+                                        className="bg-[#005bd3] h-2 rounded-full transition-all duration-300"
                                         style={{ width: `${progress}%` }}
                                     ></div>
                                 </div>
@@ -371,14 +371,14 @@ export default function QuizPage({
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={submitting}
-                                    className="bg-[#0083d3] hover:bg-[#0083d3]/90"
+                                    className="bg-[#005bd3] hover:bg-[#005bd3]/90"
                                 >
                                     {submitting ? t("submitting") : t("finishQuiz")}
                                 </Button>
                             ) : (
                                 <Button
                                     onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                                    className="bg-[#0083d3] hover:bg-[#0083d3]/90"
+                                    className="bg-[#005bd3] hover:bg-[#005bd3]/90"
                                 >
                                     {t("next")}
                                 </Button>

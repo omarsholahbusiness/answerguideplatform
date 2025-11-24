@@ -189,7 +189,7 @@ export default function QuizResultPage({
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0083d3]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005bd3]"></div>
             </div>
         );
     }
@@ -334,7 +334,7 @@ export default function QuizResultPage({
                                 onClick={handleRetry}
                                 disabled={isRetrying}
                                 variant="outline"
-                                className="border-[#0083d3] text-[#0083d3] hover:bg-[#0083d3] hover:text-white"
+                                className="border-[#005bd3] text-[#005bd3] hover:bg-[#005bd3] hover:text-white"
                             >
                                 <RotateCcw className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
                                 {isRetrying ? t("preparing") : `${t("retryQuiz")} (${result.totalAttempts || 0}/${result.maxAttempts})`}
@@ -342,7 +342,7 @@ export default function QuizResultPage({
                         )}
                         <Button
                             onClick={handleNextChapter}
-                            className="bg-[#0083d3] hover:bg-[#0083d3]/90"
+                            className="bg-[#005bd3] hover:bg-[#005bd3]/90"
                         >
                             {willRedirectToDashboard ? t("backToDashboard") : t("nextChapter")}
                         </Button>

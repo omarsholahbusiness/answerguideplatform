@@ -45,13 +45,18 @@ const teacherRoutes = [
     },
     {
         icon: Users,
-        label: "إدارة الطلاب",
+        label: "إدارة المستخدمين",
         href: "/dashboard/teacher/users",
     },
     {
         icon: Wallet,
         label: "إدارة الأرصدة",
         href: "/dashboard/teacher/balances",
+    },
+    {
+        icon: TrendingUp,
+        label: "تقدم الطلاب",
+        href: "/dashboard/teacher/progress",
     },
     {
         icon: BookOpen,

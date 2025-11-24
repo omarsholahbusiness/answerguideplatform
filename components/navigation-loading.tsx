@@ -237,7 +237,7 @@ export const NavigationLoading = () => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center animate-in fade-in duration-300">
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0083d3] via-[#0066a8] to-[#004d7f] opacity-90" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#005bd3] via-[#0066a8] to-[#004d7f] opacity-90" />
       
       {/* Animated overlay patterns */}
       <div className="absolute inset-0 overflow-hidden">

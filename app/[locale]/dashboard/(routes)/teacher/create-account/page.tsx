@@ -76,7 +76,7 @@ export default function CreateAccountPage() {
       return;
     }
 
-    if (!formData.grade || !formData.division || !formData.studyType || !formData.governorate) {
+    if (!formData.grade || !formData.studyType || !formData.governorate) {
       toast.error("برجاء استكمال بيانات التسجيل");
       setIsLoading(false);
       return;
@@ -94,7 +94,6 @@ export default function CreateAccountPage() {
           phoneNumber: "",
           parentPhoneNumber: "",
           grade: "",
-          division: "",
           studyType: "",
           governorate: "",
           password: "",
@@ -130,7 +129,6 @@ export default function CreateAccountPage() {
       phoneNumber: "",
       parentPhoneNumber: "",
       grade: "",
-      division: "",
       studyType: "",
       governorate: "",
       password: "",
@@ -256,7 +254,6 @@ export default function CreateAccountPage() {
                       </SelectContent>
                     </Select>
                   </div>
-
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,7 +395,7 @@ export default function CreateAccountPage() {
                   <Button
                     type="submit"
                     disabled={isLoading || !passwordChecks.isValid}
-                    className="flex-1 bg-[#0083d3] hover:bg-[#0083d3]/90 text-white"
+                    className="flex-1 bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
                   >
                     {isLoading ? "جاري الإنشاء..." : "إنشاء الحساب"}
                   </Button>

@@ -211,7 +211,7 @@ const TeacherPromoCodesPage = () => {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                     {t("promocodes")}
                 </h1>
-                <Button onClick={openCreateDialog} className="bg-[#0083d3] hover:bg-[#0083d3]/90">
+                <Button onClick={openCreateDialog} className="bg-[#005bd3] hover:bg-[#005bd3]/90">
                     <Plus className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
                     {t("createNewPromocode")}
                 </Button>
@@ -345,7 +345,7 @@ const TeacherPromoCodesPage = () => {
                             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                                 {t("cancel")}
                             </Button>
-                            <Button onClick={handleSubmit} className="bg-[#0083d3] hover:bg-[#0083d3]/90">
+                            <Button onClick={handleSubmit} className="bg-[#005bd3] hover:bg-[#005bd3]/90">
                                 {editingPromocode ? t("update") : t("create")}
                             </Button>
                         </div>

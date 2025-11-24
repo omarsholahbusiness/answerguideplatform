@@ -21,7 +21,7 @@ export const SearchInputFallback = () => {
                 />
             </div>
             <Button 
-                className="h-12 px-6 bg-[#0083d3] hover:bg-[#0083d3]/90 text-white font-semibold"
+                className="h-12 px-6 bg-[#005bd3] hover:bg-[#005bd3]/90 text-white font-semibold"
                 disabled
             >
                 <Search className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />

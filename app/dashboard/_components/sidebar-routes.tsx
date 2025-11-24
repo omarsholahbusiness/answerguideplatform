@@ -50,13 +50,18 @@ export const SidebarRoutes = ({ closeOnClick = false }: { closeOnClick?: boolean
         },
         {
             icon: Users,
-            label: t("manageStudents"),
+            label: t("manageUsers"),
             href: "/dashboard/teacher/users",
         },
         {
             icon: Wallet,
             label: t("manageBalances"),
             href: "/dashboard/teacher/balances",
+        },
+        {
+            icon: TrendingUp,
+            label: t("studentProgress"),
+            href: "/dashboard/teacher/progress",
         },
         {
             icon: BookOpen,

@@ -46,10 +46,10 @@ export const NavbarRoutes = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 hover:bg-[#0083d3]/10"
+                  className="h-9 w-9 p-0 hover:bg-[#005bd3]/10"
                   title={language === "ar" ? "Change Language" : "تغيير اللغة"}
                 >
-                  <Globe className="h-5 w-5 text-[#0083d3]" />
+                  <Globe className="h-5 w-5 text-[#005bd3]" />
                   <span className="sr-only">Change language</span>
                 </Button>
               </DropdownMenuTrigger>

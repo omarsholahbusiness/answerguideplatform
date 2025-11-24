@@ -315,12 +315,20 @@ const UsersPage = () => {
                                                                 <Label htmlFor="role" className="text-right">
                                                                     الدور
                                                                 </Label>
-                                                                <Input
-                                                                    id="role"
-                                                                    value={editData.role === "USER" ? "طالب" : editData.role === "TEACHER" ? "معلم" : "مشرف"}
-                                                                    disabled
-                                                                    className="col-span-3 bg-muted"
-                                                                />
+                                                                <Select
+                                                                    value={editData.role}
+                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
+                                                                    className="col-span-3"
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder="اختر الدور" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="USER">طالب</SelectItem>
+                                                                        <SelectItem value="TEACHER">معلم</SelectItem>
+                                                                        <SelectItem value="ADMIN">مشرف</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>
@@ -494,12 +502,20 @@ const UsersPage = () => {
                                                                 <Label htmlFor="role" className="text-right">
                                                                     الدور
                                                                 </Label>
-                                                                <Input
-                                                                    id="role"
-                                                                    value={editData.role === "USER" ? "طالب" : editData.role === "TEACHER" ? "معلم" : "مشرف"}
-                                                                    disabled
-                                                                    className="col-span-3 bg-muted"
-                                                                />
+                                                                <Select
+                                                                    value={editData.role}
+                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
+                                                                    className="col-span-3"
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder="اختر الدور" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="USER">طالب</SelectItem>
+                                                                        <SelectItem value="TEACHER">معلم</SelectItem>
+                                                                        <SelectItem value="ADMIN">مشرف</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>

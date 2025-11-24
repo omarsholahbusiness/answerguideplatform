@@ -140,7 +140,7 @@ export const SearchContent = ({
                                 </div>
                                 
                                 <Button 
-                                    className="w-full bg-[#0083d3] hover:bg-[#0083d3]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                                    className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
                                     variant="default"
                                     asChild
                                 >
@@ -170,7 +170,7 @@ export const SearchContent = ({
                                 }
                             </p>
                             {title && (
-                                <Button asChild className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white font-semibold">
+                                <Button asChild className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white font-semibold">
                                     <Link href="/dashboard/search">
                                         {t("viewAllCourses")}
                                     </Link>

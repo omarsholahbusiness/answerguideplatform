@@ -87,8 +87,8 @@ export default function SignInPage() {
       </div>
       
       {/* Right Side - Image */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#0083d3]/10 to-[#0083d3]/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#0083d3]/5"></div>
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#005bd3]/10 to-[#005bd3]/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#005bd3]/5"></div>
         <div className="relative z-10 flex items-center justify-center w-full">
           <div className="text-center space-y-6 p-8">
             <div className="relative w-64 h-64 mx-auto">
@@ -96,12 +96,12 @@ export default function SignInPage() {
                 src="/logo.png"
                 alt="Teacher"
                 fill
-                className="object-cover rounded-full border-4 border-[#0083d3]/20 shadow-2xl"
+                className="object-cover rounded-full border-4 border-[#005bd3]/20 shadow-2xl"
                 unoptimized
               />
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-[#0083d3]">
+              <h3 className="text-2xl font-bold text-[#005bd3]">
                 {t("welcomeBack")}
               </h3>
               <p className="text-lg text-muted-foreground max-w-md">
@@ -173,7 +173,7 @@ export default function SignInPage() {
               type="submit"
               loading={isLoading}
               loadingText={t("signingIn")}
-              className="w-full h-10 bg-[#0083d3] hover:bg-[#0083d3]/90 text-white"
+              className="w-full h-10 bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
             >
               {t("signIn")}
             </LoadingButton>

@@ -32,7 +32,7 @@ export function AdminCoursesContent({ courses }: AdminCoursesContentProps) {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">{t("allCourses")}</h1>
                 <Link href="/dashboard/admin/courses/create">
-                    <Button className="bg-[#0083d3] hover:bg-[#0083d3]/90 text-white">
+                    <Button className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white">
                         <PlusCircle className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
                         {t("createNewCourse")}
                     </Button>

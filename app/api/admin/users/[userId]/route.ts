@@ -18,7 +18,7 @@ export async function PATCH(
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        const { fullName, phoneNumber, parentPhoneNumber } = await req.json();
+        const { fullName, phoneNumber, parentPhoneNumber, role } = await req.json();
 
         // Check if user exists
         const existingUser = await db.user.findUnique({
@@ -29,6 +29,16 @@ export async function PATCH(
 
         if (!existingUser) {
             return new NextResponse("User not found", { status: 404 });
+        }
+
+        // Prevent admin from changing their own role
+        if (params.userId === session.user.id && role && role !== existingUser.role) {
+            return new NextResponse("Cannot change your own role", { status: 400 });
+        }
+
+        // Validate role if provided
+        if (role && !["USER", "TEACHER", "ADMIN"].includes(role)) {
+            return new NextResponse("Invalid role", { status: 400 });
         }
 
         // Check if phone number is already taken by another user
@@ -60,7 +70,7 @@ export async function PATCH(
             }
         }
 
-        // Update user - Admin cannot change roles (only TEACHER can)
+        // Update user including role
         const updatedUser = await db.user.update({
             where: {
                 id: params.userId
@@ -69,7 +79,7 @@ export async function PATCH(
                 ...(fullName && { fullName }),
                 ...(phoneNumber && { phoneNumber }),
                 ...(parentPhoneNumber && { parentPhoneNumber }),
-                // Role change not allowed for ADMIN
+                ...(role && { role }),
             }
         });
 
