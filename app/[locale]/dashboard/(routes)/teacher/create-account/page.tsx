@@ -102,8 +102,12 @@ export default function CreateAccountPage() {
       }
     } catch (error) {
       const axiosError = error as AxiosError;
+      console.error("Create account error:", axiosError.response?.data || axiosError.message);
+      
       if (axiosError.response?.status === 400) {
-        const errorMessage = axiosError.response.data as string;
+        const errorData = axiosError.response.data;
+        const errorMessage = typeof errorData === "string" ? errorData : (errorData as any)?.message || String(errorData);
+        
         if (errorMessage.includes("Phone number already exists")) {
           toast.error("رقم الهاتف مسجل مسبقاً");
         } else if (errorMessage.includes("Parent phone number already exists")) {
@@ -112,10 +116,18 @@ export default function CreateAccountPage() {
           toast.error("رقم الهاتف لا يمكن أن يكون نفس رقم هاتف الوالد");
         } else if (errorMessage.includes("Passwords do not match")) {
           toast.error("كلمات المرور غير متطابقة");
+        } else if (errorMessage.includes("Missing required fields")) {
+          toast.error("يرجى إكمال جميع البيانات المطلوبة");
         } else {
-          toast.error("حدث خطأ أثناء إنشاء الحساب");
+          toast.error(errorMessage || "حدث خطأ أثناء إنشاء الحساب");
         }
+      } else if (axiosError.response?.status === 500) {
+        const errorData = axiosError.response.data;
+        const errorMessage = typeof errorData === "string" ? errorData : (errorData as any)?.message || String(errorData);
+        console.error("Server error:", errorMessage);
+        toast.error(errorMessage || "حدث خطأ أثناء إنشاء الحساب");
       } else {
+        console.error("Unknown error:", axiosError);
         toast.error("حدث خطأ أثناء إنشاء الحساب");
       }
     } finally {

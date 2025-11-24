@@ -79,6 +79,18 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("[TEACHER_CREATE_ACCOUNT]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[TEACHER_CREATE_ACCOUNT] Error details:", errorMessage);
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Internal Error", 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      }), 
+      { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
 } 

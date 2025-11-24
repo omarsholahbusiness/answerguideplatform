@@ -103,10 +103,22 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error("[CHAPTER_ID] Detailed error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[CHAPTER_ID] Error details:", errorMessage);
     if (error instanceof Error) {
-      return new NextResponse(`Internal Error: ${error.message}\nStack: ${error.stack}`, { status: 500 });
+      console.error("[CHAPTER_ID] Error stack:", error.stack);
     }
-    return new NextResponse("Internal Error", { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Internal Error", 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      }), 
+      { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
 }
 
