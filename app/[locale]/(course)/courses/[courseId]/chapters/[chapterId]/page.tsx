@@ -162,7 +162,11 @@ const ChapterPage = () => {
         console.error("🔍 Error fetching data:", axiosError);
         if (axiosError.response) {
           console.error("🔍 Error response:", axiosError.response.data);
-          toast.error(`فشل تحميل الفصل: ${axiosError.response.data}`);
+          const errorData = axiosError.response.data;
+          const errorMessage = typeof errorData === "string" 
+            ? errorData 
+            : (errorData as any)?.message || (errorData as any)?.error || String(errorData);
+          toast.error(`فشل تحميل الفصل: ${errorMessage}`);
         } else if (axiosError.request) {
           console.error("🔍 Error request:", axiosError.request);
           toast.error("فشل الاتصال بالخادم");

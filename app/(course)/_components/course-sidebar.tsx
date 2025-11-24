@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, use } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { CheckCircle, Circle } from "lucide-react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/use-translations";
 import { useRTL } from "@/components/providers/rtl-provider";
@@ -81,7 +81,15 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
       setCourseContent(contentResponse.data);
       setCourseTitle(courseResponse.data.title);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      const axiosError = error as AxiosError;
+      console.error("Error fetching course data:", axiosError);
+      if (axiosError.response) {
+        const errorData = axiosError.response.data;
+        const errorMessage = typeof errorData === "string" 
+          ? errorData 
+          : (errorData as any)?.message || (errorData as any)?.error || String(errorData);
+        console.error("Error details:", errorMessage);
+      }
       setError(t("loadCourseError"));
     } finally {
       setLoading(false);
