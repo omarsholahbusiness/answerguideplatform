@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { useTranslations } from "@/lib/use-translations";
 import { useRTL } from "@/components/providers/rtl-provider";
 
-interface PromoCode {
+interface Code {
     id: string;
     code: string;
     discountType: "PERCENTAGE" | "FIXED";
@@ -43,12 +43,12 @@ interface Course {
 }
 
 const TeacherPromoCodesPage = () => {
-    const [promocodes, setPromocodes] = useState<PromoCode[]>([]);
+    const [codes, setCodes] = useState<Code[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingPromocode, setEditingPromocode] = useState<PromoCode | null>(null);
+    const [editingCode, setEditingCode] = useState<Code | null>(null);
     const { t } = useTranslations();
     const { isRTL } = useRTL();
     
@@ -57,24 +57,24 @@ const TeacherPromoCodesPage = () => {
     const [courseId, setCourseId] = useState<string>("");
 
     useEffect(() => {
-        fetchPromocodes();
+        fetchCodes();
         fetchCourses();
     }, []);
 
-    const fetchPromocodes = async () => {
+    const fetchCodes = async () => {
         try {
             const response = await fetch("/api/promocodes");
             if (response.ok) {
                 const data = await response.json();
-                setPromocodes(data);
+                setCodes(data);
             } else {
                 const errorData = await response.json().catch(() => ({ error: t("errorOccurred") }));
-                console.error("Error fetching promocodes:", errorData);
-                toast.error(errorData.error || t("fetchPromocodesError"));
+                console.error("Error fetching codes:", errorData);
+                toast.error(errorData.error || t("fetchCodesError"));
             }
         } catch (error) {
-            console.error("Error fetching promocodes:", error);
-            toast.error(t("fetchPromocodesError"));
+            console.error("Error fetching codes:", error);
+            toast.error(t("fetchCodesError"));
         } finally {
             setLoading(false);
         }
@@ -87,7 +87,7 @@ const TeacherPromoCodesPage = () => {
                 const data = await response.json();
                 // Check if data is an array
                 if (Array.isArray(data)) {
-                    // Filter only published courses for promo code selection
+                    // Filter only published courses for codeItem code selection
                     const publishedCourses = data.filter((course: Course) => course.isPublished);
                     setCourses(publishedCourses);
                 } else {
@@ -104,7 +104,7 @@ const TeacherPromoCodesPage = () => {
     const resetForm = () => {
         setCode("");
         setCourseId("");
-        setEditingPromocode(null);
+        setEditingCode(null);
     };
 
     const openCreateDialog = () => {
@@ -112,10 +112,10 @@ const TeacherPromoCodesPage = () => {
         setIsDialogOpen(true);
     };
 
-    const openEditDialog = (promocode: PromoCode) => {
-        setCode(promocode.code);
-        setCourseId(promocode.courseId || "");
-        setEditingPromocode(promocode);
+    const openEditDialog = (codeItem: Code) => {
+        setCode(codeItem.code);
+        setCourseId(codeItem.courseId || "");
+        setEditingCode(codeItem);
         setIsDialogOpen(true);
     };
 
@@ -134,7 +134,7 @@ const TeacherPromoCodesPage = () => {
         const data = {
             code: code.trim(),
             courseId: courseId,
-            // All promo codes are 100% discount, single use
+            // All codeItem codes are 100% discount, single use
             discountType: "PERCENTAGE",
             discountValue: 100,
             usageLimit: 1,
@@ -142,10 +142,10 @@ const TeacherPromoCodesPage = () => {
         };
 
         try {
-            const url = editingPromocode 
-                ? `/api/promocodes/${editingPromocode.id}`
+            const url = editingCode 
+                ? `/api/promocodes/${editingCode.id}`
                 : "/api/promocodes";
-            const method = editingPromocode ? "PATCH" : "POST";
+            const method = editingCode ? "PATCH" : "POST";
 
             const response = await fetch(url, {
                 method,
@@ -156,16 +156,16 @@ const TeacherPromoCodesPage = () => {
             });
 
             if (response.ok) {
-                toast.success(editingPromocode ? t("updatePromocodeSuccess") : t("createPromocodeSuccess"));
+                toast.success(editingCode ? t("updatePromocodeSuccess") : t("createPromocodeSuccess"));
                 setIsDialogOpen(false);
                 resetForm();
-                fetchPromocodes();
+                fetchCodes();
             } else {
                 const errorData = await response.json();
                 toast.error(errorData.error || t("errorOccurred"));
             }
         } catch (error) {
-            console.error("Error saving promocode:", error);
+            console.error("Error saving code:", error);
             toast.error(t("savePromocodeError"));
         }
     };
@@ -182,19 +182,19 @@ const TeacherPromoCodesPage = () => {
 
             if (response.ok) {
                 toast.success(t("deletePromocodeSuccess"));
-                fetchPromocodes();
+                fetchCodes();
             } else {
                 toast.error(t("deletePromocodeError"));
             }
         } catch (error) {
-            console.error("Error deleting promocode:", error);
+            console.error("Error deleting code:", error);
             toast.error(t("deletePromocodeError"));
         }
     };
 
-    const filteredPromocodes = promocodes.filter(promo =>
-        promo.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (promo.description && promo.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredCodes = codes.filter(codeItem =>
+        codeItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (codeItem.description && codeItem.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (loading) {
@@ -231,7 +231,7 @@ const TeacherPromoCodesPage = () => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {filteredPromocodes.length > 0 ? (
+                    {filteredCodes.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -243,27 +243,27 @@ const TeacherPromoCodesPage = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredPromocodes.map((promo) => (
-                                    <TableRow key={promo.id}>
+                                {filteredCodes.map((codeItem) => (
+                                    <TableRow key={codeItem.id}>
                                         <TableCell className="font-mono font-bold">
                                             <Badge variant="outline" className="gap-1">
                                                 <Ticket className="h-3 w-3" />
-                                                {promo.code}
+                                                {codeItem.code}
                                             </Badge>
                                         </TableCell>
                                         <TableCell style={{ direction: isRTL ? "rtl" : "ltr" }}>
-                                            {promo.course?.title || t("notSpecified")}
+                                            {codeItem.course?.title || t("notSpecified")}
                                         </TableCell>
                                         <TableCell>
-                                            {promo.usedCount > 0 ? (
+                                            {codeItem.usedCount > 0 ? (
                                                 <Badge variant="destructive">{t("used")}</Badge>
                                             ) : (
                                                 <Badge variant="default">{t("available")}</Badge>
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={promo.isActive ? "default" : "secondary"}>
-                                                {promo.isActive ? t("active") : t("inactive")}
+                                            <Badge variant={codeItem.isActive ? "default" : "secondary"}>
+                                                {codeItem.isActive ? t("active") : t("inactive")}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className={isRTL ? "text-right" : "text-left"}>
@@ -271,14 +271,14 @@ const TeacherPromoCodesPage = () => {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => openEditDialog(promo)}
+                                                    onClick={() => openEditDialog(codeItem)}
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
-                                                    onClick={() => handleDelete(promo.id)}
+                                                    onClick={() => handleDelete(codeItem.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -301,10 +301,10 @@ const TeacherPromoCodesPage = () => {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingPromocode ? t("editPromocode") : t("createPromocode")}
+                            {editingCode ? t("editPromocode") : t("createPromocode")}
                         </DialogTitle>
                         <DialogDescription>
-                            {editingPromocode ? t("editPromocodeDescription") : t("createPromocodeDescription")}
+                            {editingCode ? t("editPromocodeDescription") : t("createPromocodeDescription")}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
@@ -315,7 +315,7 @@ const TeacherPromoCodesPage = () => {
                                 value={code}
                                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                                 placeholder={t("promocodeCodePlaceholder")}
-                                disabled={!!editingPromocode}
+                                disabled={!!editingCode}
                             />
                             <p className="text-xs text-muted-foreground">
                                 {t("promocodeCodeHint")}
@@ -346,7 +346,7 @@ const TeacherPromoCodesPage = () => {
                                 {t("cancel")}
                             </Button>
                             <Button onClick={handleSubmit} className="bg-[#005bd3] hover:bg-[#005bd3]/90">
-                                {editingPromocode ? t("update") : t("create")}
+                                {editingCode ? t("update") : t("create")}
                             </Button>
                         </div>
                     </div>

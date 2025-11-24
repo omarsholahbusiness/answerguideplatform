@@ -22,15 +22,6 @@ export async function GET(
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        // Check if promoCode exists on db object
-        if (!db.promoCode) {
-            console.error("[PROMOCODE_GET] db.promoCode is undefined. Available models:", Object.keys(db).filter(key => !key.startsWith('$')));
-            return new NextResponse(
-                JSON.stringify({ error: "Database model not available. Please restart the server." }),
-                { status: 500, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
         const promocode = await db.promoCode.findUnique({
             where: { id: resolvedParams.promocodeId },
             include: {

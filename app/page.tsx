@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown } from "lucide-react";
+import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/navbar";
@@ -557,6 +557,23 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* WhatsApp Floating Button */}
+      <motion.a
+        href="https://wa.me/201005224432"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <div className="w-14 h-14 bg-[#005bd3] hover:bg-[#005bd3]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all">
+          <MessageCircle className="h-7 w-7 text-white" />
+        </div>
+      </motion.a>
     </div>
   );
 } 

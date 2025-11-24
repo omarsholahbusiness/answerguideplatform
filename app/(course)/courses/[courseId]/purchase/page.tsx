@@ -42,7 +42,8 @@ export default function PurchasePage({
     error?: string;
   } | null>(null);
   const { t } = useTranslations();
-  const { isRTL } = useRTL();
+  const { isRTL, language } = useRTL();
+  const currentLanguage = language || "ar";
 
   useEffect(() => {
     fetchCourse();
@@ -104,7 +105,11 @@ export default function PurchasePage({
           finalPrice: data.finalPrice,
           originalPrice: data.originalPrice,
         });
-        toast.success(t("promocodeApplied"));
+        toast.success(
+          currentLanguage === "ar" 
+            ? `تم شراء الكورس بقيمة ${data.finalPrice} جنيه`
+            : `Course purchased for ${data.finalPrice} EGP`
+        );
       } else {
         const errorData = await response.json();
         setPromocodeValidation({
@@ -229,18 +234,14 @@ export default function PurchasePage({
                 </div>
               )}
               <div className="space-y-2">
-                {promocodeValidation?.valid && (
-                  <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2 text-muted-foreground line-through`}>
-                    <span>{t("originalPrice")}</span>
-                    <span dir="ltr">{promocodeValidation.originalPrice} {t("currency")}</span>
-                  </div>
-                )}
                 <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2`}>
                   {promocodeValidation?.valid && (
                     <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-1 text-green-600`}>
                       <CheckCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium" dir="ltr">
-                        {t("discount")} {promocodeValidation.discountAmount} {t("currency")}
+                      <span className="text-sm font-medium">
+                        {currentLanguage === "ar" 
+                          ? `تم شراء الكورس بقيمة ${promocodeValidation.discountAmount} جنيه`
+                          : `Course purchased for ${promocodeValidation.discountAmount} EGP`}
                       </span>
                     </div>
                   )}
@@ -252,7 +253,7 @@ export default function PurchasePage({
             </CardContent>
           </Card>
 
-          {/* Promocode Section */}
+          {/* Code Section */}
           <Card>
             <CardHeader>
               <CardTitle className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2`}>
@@ -278,7 +279,7 @@ export default function PurchasePage({
                     <Button
                       onClick={handleValidatePromocode}
                       disabled={!promocode.trim() || isValidatingPromocode}
-                      variant="outline"
+                      className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
                     >
                       {isValidatingPromocode ? t("validating") : t("applyButton")}
                     </Button>
@@ -287,8 +288,10 @@ export default function PurchasePage({
                   <div className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} justify-between p-3 bg-green-50 border border-green-200 rounded-lg`}>
                     <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2 text-green-700`}>
                       <CheckCircle className="h-5 w-5" />
-                      <span className="font-medium" dir="ltr">
-                        {promocode} - {t("discount")} {promocodeValidation.discountAmount} {t("currency")}
+                      <span className="font-medium">
+                        {promocode} - {currentLanguage === "ar" 
+                          ? `تم شراء الكورس بقيمة ${promocodeValidation.discountAmount} جنيه`
+                          : `Course purchased for ${promocodeValidation.discountAmount} EGP`}
                       </span>
                     </div>
                     <Button
@@ -376,8 +379,8 @@ export default function PurchasePage({
             <div className={`text-center text-sm text-muted-foreground ${isRTL ? "text-right" : "text-left"}`}>
               <p dir="ltr">{t("willDeduct")} {finalPrice.toFixed(2)} {t("currency")} {t("fromYourBalance")}</p>
               {promocodeValidation?.valid && (
-                <p className="text-green-600 font-medium" dir="ltr">
-                  {t("appliedDiscount")} {promocodeValidation.discountAmount} {t("currency")} {t("applied")}
+                <p className="text-green-600 font-medium">
+                  خصم {promocodeValidation.discountAmount} جنيه
                 </p>
               )}
               <p>{t("accessAfterPurchase")}</p>

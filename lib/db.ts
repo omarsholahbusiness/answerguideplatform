@@ -48,15 +48,28 @@ function createPrismaClient() {
         throw new Error("Missing DATABASE_URL or DIRECT_DATABASE_URL environment variable.");
     }
 
+    // Add connection pooling parameters to prevent "too many connections" error
+    // For serverless (Vercel), use connection_limit=1 per function
+    // This ensures each serverless function only uses 1 connection
+    let connectionUrl = datasourceUrl;
+    if (!connectionUrl.includes('connection_limit')) {
+        connectionUrl = connectionUrl.includes('?') 
+            ? `${connectionUrl}&connection_limit=1&pool_timeout=20`
+            : `${connectionUrl}?connection_limit=1&pool_timeout=20`;
+    }
+
     return new PrismaClientNode({
         datasources: {
-            db: { url: datasourceUrl },
+            db: { url: connectionUrl },
         },
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
 }
 
 export const db = globalForPrisma.prisma ?? createPrismaClient();
 
-if (!isEdgeRuntime && process.env.NODE_ENV !== "production") {
+// Always use singleton pattern to prevent multiple Prisma instances
+// This is critical for serverless environments like Vercel
+if (!isEdgeRuntime) {
     globalForPrisma.prisma = db;
 }

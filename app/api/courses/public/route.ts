@@ -83,18 +83,33 @@ export async function GET() {
 
     return NextResponse.json(coursesWithDefaultProgress);
   } catch (error) {
-    console.log("[COURSES_PUBLIC]", error);
+    console.error("[COURSES_PUBLIC]", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[COURSES_PUBLIC] Error details:", errorMessage);
     
     // If the table doesn't exist or there's a database connection issue,
     // return an empty array instead of an error
     if (error instanceof Error && (
       error.message.includes("does not exist") || 
       error.message.includes("P2021") ||
-      error.message.includes("table")
+      error.message.includes("table") ||
+      error.message.includes("too many") ||
+      error.message.includes("connection")
     )) {
+      console.error("[COURSES_PUBLIC] Database connection issue, returning empty array");
       return NextResponse.json([]);
     }
     
-    return new NextResponse("Internal Error", { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Internal Error", 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      }), 
+      { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
 } 

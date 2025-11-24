@@ -100,7 +100,7 @@ export default function PurchasePage({
           finalPrice: data.finalPrice,
           originalPrice: data.originalPrice,
         });
-        toast.success("تم تطبيق كوبون الخصم بنجاح!");
+        toast.success(`تم شراء الكورس بقيمة ${data.finalPrice} جنيه`);
       } else {
         const errorData = await response.json();
         setPromocodeValidation({
@@ -225,18 +225,12 @@ export default function PurchasePage({
                 </div>
               )}
               <div className="space-y-2">
-                {promocodeValidation?.valid && (
-                  <div className="flex items-center gap-2 text-muted-foreground line-through">
-                    <span>السعر الأصلي:</span>
-                    <span>{promocodeValidation.originalPrice} جنيه</span>
-                  </div>
-                )}
                 <div className="flex items-center gap-2">
                   {promocodeValidation?.valid && (
                     <div className="flex items-center gap-1 text-green-600">
                       <CheckCircle className="h-5 w-5" />
                       <span className="text-sm font-medium">
-                        خصم {promocodeValidation.discountAmount} جنيه
+                        تم شراء الكورس بقيمة {promocodeValidation.discountAmount} جنيه
                       </span>
                     </div>
                   )}
@@ -248,7 +242,7 @@ export default function PurchasePage({
             </CardContent>
           </Card>
 
-          {/* Promocode Section */}
+          {/* Code Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -274,7 +268,7 @@ export default function PurchasePage({
                     <Button
                       onClick={handleValidatePromocode}
                       disabled={!promocode.trim() || isValidatingPromocode}
-                      variant="outline"
+                      className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
                     >
                       {isValidatingPromocode ? "جارٍ..." : "تطبيق"}
                     </Button>
@@ -284,7 +278,7 @@ export default function PurchasePage({
                     <div className="flex items-center gap-2 text-green-700">
                       <CheckCircle className="h-5 w-5" />
                       <span className="font-medium">
-                        {promocode} - خصم {promocodeValidation.discountAmount} جنيه
+                        {promocode} - تم شراء الكورس بقيمة {promocodeValidation.discountAmount} جنيه
                       </span>
                     </div>
                     <Button

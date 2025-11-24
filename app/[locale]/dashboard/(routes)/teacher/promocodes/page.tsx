@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Edit, Trash2, Search, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
-interface PromoCode {
+interface Code {
     id: string;
     code: string;
     discountType: "PERCENTAGE" | "FIXED";
@@ -41,35 +41,35 @@ interface Course {
 }
 
 const TeacherPromoCodesPage = () => {
-    const [promocodes, setPromocodes] = useState<PromoCode[]>([]);
+    const [codes, setCodes] = useState<Code[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingPromocode, setEditingPromocode] = useState<PromoCode | null>(null);
+    const [editingCode, setEditingCode] = useState<Code | null>(null);
     
     // Form state
     const [code, setCode] = useState("");
     const [courseId, setCourseId] = useState<string>("");
 
     useEffect(() => {
-        fetchPromocodes();
+        fetchCodes();
         fetchCourses();
     }, []);
 
-    const fetchPromocodes = async () => {
+    const fetchCodes = async () => {
         try {
             const response = await fetch("/api/promocodes");
             if (response.ok) {
                 const data = await response.json();
-                setPromocodes(data);
+                setCodes(data);
             } else {
                 const errorData = await response.json().catch(() => ({ error: "خطأ غير معروف" }));
-                console.error("Error fetching promocodes:", errorData);
+                console.error("Error fetching codes:", errorData);
                 toast.error(errorData.error || "حدث خطأ أثناء جلب الكوبونات");
             }
         } catch (error) {
-            console.error("Error fetching promocodes:", error);
+            console.error("Error fetching codes:", error);
             toast.error("حدث خطأ أثناء جلب الكوبونات");
         } finally {
             setLoading(false);
@@ -100,7 +100,7 @@ const TeacherPromoCodesPage = () => {
     const resetForm = () => {
         setCode("");
         setCourseId("");
-        setEditingPromocode(null);
+        setEditingCode(null);
     };
 
     const openCreateDialog = () => {
@@ -108,10 +108,10 @@ const TeacherPromoCodesPage = () => {
         setIsDialogOpen(true);
     };
 
-    const openEditDialog = (promocode: PromoCode) => {
-        setCode(promocode.code);
-        setCourseId(promocode.courseId || "");
-        setEditingPromocode(promocode);
+    const openEditDialog = (codeItem: Code) => {
+        setCode(codeItem.code);
+        setCourseId(codeItem.courseId || "");
+        setEditingCode(codeItem);
         setIsDialogOpen(true);
     };
 
@@ -138,10 +138,10 @@ const TeacherPromoCodesPage = () => {
         };
 
         try {
-            const url = editingPromocode 
-                ? `/api/promocodes/${editingPromocode.id}`
+            const url = editingCode 
+                ? `/api/promocodes/${editingCode.id}`
                 : "/api/promocodes";
-            const method = editingPromocode ? "PATCH" : "POST";
+            const method = editingCode ? "PATCH" : "POST";
 
             const response = await fetch(url, {
                 method,
@@ -152,16 +152,16 @@ const TeacherPromoCodesPage = () => {
             });
 
             if (response.ok) {
-                toast.success(editingPromocode ? "تم تحديث الكوبون بنجاح" : "تم إنشاء الكوبون بنجاح");
+                toast.success(editingCode ? "تم تحديث الكوبون بنجاح" : "تم إنشاء الكوبون بنجاح");
                 setIsDialogOpen(false);
                 resetForm();
-                fetchPromocodes();
+                fetchCodes();
             } else {
                 const errorData = await response.json();
                 toast.error(errorData.error || "حدث خطأ");
             }
         } catch (error) {
-            console.error("Error saving promocode:", error);
+            console.error("Error saving code:", error);
             toast.error("حدث خطأ أثناء حفظ الكوبون");
         }
     };
@@ -178,19 +178,19 @@ const TeacherPromoCodesPage = () => {
 
             if (response.ok) {
                 toast.success("تم حذف الكوبون بنجاح");
-                fetchPromocodes();
+                fetchCodes();
             } else {
                 toast.error("حدث خطأ أثناء حذف الكوبون");
             }
         } catch (error) {
-            console.error("Error deleting promocode:", error);
+            console.error("Error deleting code:", error);
             toast.error("حدث خطأ أثناء حذف الكوبون");
         }
     };
 
-    const filteredPromocodes = promocodes.filter(promo =>
-        promo.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (promo.description && promo.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredCodes = codes.filter(codeItem =>
+        codeItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (codeItem.description && codeItem.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (loading) {
@@ -227,7 +227,7 @@ const TeacherPromoCodesPage = () => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {filteredPromocodes.length > 0 ? (
+                    {filteredCodes.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -239,27 +239,27 @@ const TeacherPromoCodesPage = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredPromocodes.map((promo) => (
-                                    <TableRow key={promo.id}>
+                                {filteredCodes.map((codeItem) => (
+                                    <TableRow key={codeItem.id}>
                                         <TableCell className="font-mono font-bold">
                                             <Badge variant="outline" className="gap-1">
                                                 <Ticket className="h-3 w-3" />
-                                                {promo.code}
+                                                {codeItem.code}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {promo.course?.title || "غير محدد"}
+                                            {codeItem.course?.title || "غير محدد"}
                                         </TableCell>
                                         <TableCell>
-                                            {promo.usedCount > 0 ? (
+                                            {codeItem.usedCount > 0 ? (
                                                 <Badge variant="destructive">مستخدم</Badge>
                                             ) : (
                                                 <Badge variant="default">متاح</Badge>
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={promo.isActive ? "default" : "secondary"}>
-                                                {promo.isActive ? "نشط" : "غير نشط"}
+                                            <Badge variant={codeItem.isActive ? "default" : "secondary"}>
+                                                {codeItem.isActive ? "نشط" : "غير نشط"}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -267,14 +267,14 @@ const TeacherPromoCodesPage = () => {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => openEditDialog(promo)}
+                                                    onClick={() => openEditDialog(codeItem)}
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
-                                                    onClick={() => handleDelete(promo.id)}
+                                                    onClick={() => handleDelete(codeItem.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -297,10 +297,10 @@ const TeacherPromoCodesPage = () => {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingPromocode ? "تعديل الكوبون" : "إنشاء كوبون جديد"}
+                            {editingCode ? "تعديل الكوبون" : "إنشاء كوبون جديد"}
                         </DialogTitle>
                         <DialogDescription>
-                            {editingPromocode ? "قم بتعديل بيانات الكوبون" : "قم بإنشاء كوبون خصم جديد"}
+                            {editingCode ? "قم بتعديل بيانات الكوبون" : "قم بإنشاء كوبون خصم جديد"}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
@@ -311,7 +311,7 @@ const TeacherPromoCodesPage = () => {
                                 value={code}
                                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                                 placeholder="مثال: SUMMER2024"
-                                disabled={!!editingPromocode}
+                                disabled={!!editingCode}
                             />
                             <p className="text-xs text-muted-foreground">
                                 رمز الكوبون الذي سيستخدمه الطلاب للحصول على الكورس مجاناً
@@ -342,7 +342,7 @@ const TeacherPromoCodesPage = () => {
                                 إلغاء
                             </Button>
                             <Button onClick={handleSubmit} className="bg-[#005bd3] hover:bg-[#005bd3]/90">
-                                {editingPromocode ? "تحديث" : "إنشاء"}
+                                {editingCode ? "تحديث" : "إنشاء"}
                             </Button>
                         </div>
                     </div>

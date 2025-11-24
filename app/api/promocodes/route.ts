@@ -18,16 +18,7 @@ export async function GET(req: NextRequest) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        // Check if promoCode exists on db object
-        if (!db.promoCode) {
-            console.error("[PROMOCODES_GET] db.promoCode is undefined. Available models:", Object.keys(db).filter(key => !key.startsWith('$')));
-            return new NextResponse(
-                JSON.stringify({ error: "Database model not available. Please restart the server." }),
-                { status: 500, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
-        // Try to include course relation, but handle if it fails (Prisma client might not be regenerated)
+        // Fetch promocodes with course relation
         let promocodes;
         try {
             promocodes = await db.promoCode.findMany({
@@ -68,7 +59,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-// POST create new promocode - for teachers and admins
+// POST create new codeItem - for teachers and admins
 export async function POST(req: NextRequest) {
     try {
         const { userId, user } = await auth();
@@ -104,15 +95,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check if promoCode exists on db object
-        if (!db.promoCode) {
-            console.error("[PROMOCODES_POST] db.promoCode is undefined. Available models:", Object.keys(db).filter(key => !key.startsWith('$')));
-            return new NextResponse(
-                JSON.stringify({ error: "Database model not available. Please restart the server." }),
-                { status: 500, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
         // Check if code already exists
         const existingCode = await db.promoCode.findUnique({
             where: { code: code.toUpperCase().trim() },
@@ -128,8 +110,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Create promocode - all promo codes are 100% discount, single use, for specific course
-        const promocode = await db.promoCode.create({
+        // Create promocode - all promocodes are 100% discount, single use, for specific course
+        const newPromoCode = await db.promoCode.create({
             data: {
                 code: code.toUpperCase().trim(),
                 discountType: "PERCENTAGE",
@@ -148,7 +130,7 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        return NextResponse.json(promocode);
+        return NextResponse.json(newPromoCode);
     } catch (error) {
         console.error("[PROMOCODES_POST]", error);
         if (error instanceof Error) {

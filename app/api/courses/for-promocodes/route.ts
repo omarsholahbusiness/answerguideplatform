@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { normalizeRole } from "@/lib/utils";
 
-// GET all courses for promo code selection - for teachers and admins only
+// GET all courses for codeItem code selection - for teachers and admins only
 export async function GET(req: NextRequest) {
     try {
         const { userId, user } = await auth();

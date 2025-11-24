@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { translations } from "@/lib/translations";
 
-// POST validate promocode
+// POST validate promocode 
 export async function POST(req: NextRequest) {
     try {
         const { userId } = await auth();
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Find promocode
+        // Find promocode 
         const promocode = await db.promoCode.findUnique({
             where: { code: code.toUpperCase().trim() },
         });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check if promo code is for this specific course
+        // Check if promocode is for this specific course
         if (promocode.courseId !== courseId) {
             const cookieStore = await cookies();
             const language = (cookieStore.get("language")?.value as "ar" | "en") || "ar";
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
         const coursePrice = course.price || 0;
         
-        // All promo codes are 100% discount
+        // All promocodes are 100% discount
         const discountAmount = coursePrice;
         const finalPrice = 0;
 
