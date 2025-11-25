@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Search, Ticket } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Ticket, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "@/lib/use-translations";
 import { useRTL } from "@/components/providers/rtl-provider";
@@ -49,12 +49,17 @@ const AdminPromoCodesPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCode, setEditingCode] = useState<Code | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [deleteCourseId, setDeleteCourseId] = useState<string>("");
+    const [isDeleting, setIsDeleting] = useState(false);
     const { t } = useTranslations();
     const { isRTL } = useRTL();
     
     // Form state
     const [code, setCode] = useState("");
     const [courseId, setCourseId] = useState<string>("");
+    const [quantity, setQuantity] = useState<number>(1);
+    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         fetchCodes();
@@ -107,6 +112,7 @@ const AdminPromoCodesPage = () => {
     const resetForm = () => {
         setCode("");
         setCourseId("");
+        setQuantity(1);
         setEditingCode(null);
     };
 
@@ -124,42 +130,74 @@ const AdminPromoCodesPage = () => {
 
     const handleSubmit = async () => {
         // Validation
-        if (!code.trim()) {
-            toast.error(t("promocodeRequired"));
-            return;
-        }
-
         if (!courseId || courseId === "ALL") {
             toast.error(t("selectCourse"));
             return;
         }
 
-        const data = {
-            code: code.trim(),
-            courseId: courseId,
-            // All codeItem codes are 100% discount, single use
-            discountType: "PERCENTAGE",
-            discountValue: 100,
-            usageLimit: 1,
-            isActive: true,
-        };
+        // For editing, use the existing single code logic
+        if (editingCode) {
+            if (!code.trim()) {
+                toast.error(t("promocodeRequired"));
+                return;
+            }
 
+            const data = {
+                code: code.trim(),
+                courseId: courseId,
+                discountType: "PERCENTAGE",
+                discountValue: 100,
+                usageLimit: 1,
+                isActive: true,
+            };
+
+            try {
+                const response = await fetch(`/api/promocodes/${editingCode.id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    toast.success(t("updatePromocodeSuccess"));
+                    setIsDialogOpen(false);
+                    resetForm();
+                    fetchCodes();
+                } else {
+                    const errorData = await response.json();
+                    toast.error(errorData.error || t("errorOccurred"));
+                }
+            } catch (error) {
+                console.error("Error updating code:", error);
+                toast.error(t("savePromocodeError"));
+            }
+            return;
+        }
+
+        // For creating new codes - bulk generation
+        if (quantity < 1 || quantity > 99) {
+            toast.error(t("quantityValidationError"));
+            return;
+        }
+
+        setIsGenerating(true);
         try {
-            const url = editingCode 
-                ? `/api/promocodes/${editingCode.id}`
-                : "/api/promocodes";
-            const method = editingCode ? "PATCH" : "POST";
-
-            const response = await fetch(url, {
-                method,
+            const response = await fetch("/api/promocodes/bulk", {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    courseId: courseId,
+                    quantity: quantity,
+                }),
             });
 
             if (response.ok) {
-                toast.success(editingCode ? t("updatePromocodeSuccess") : t("createPromocodeSuccess"));
+                const result = await response.json();
+                toast.success(t("codesCreatedSuccess").replace("{count}", result.count.toString()));
                 setIsDialogOpen(false);
                 resetForm();
                 fetchCodes();
@@ -168,8 +206,10 @@ const AdminPromoCodesPage = () => {
                 toast.error(errorData.error || t("errorOccurred"));
             }
         } catch (error) {
-            console.error("Error saving code:", error);
+            console.error("Error generating codes:", error);
             toast.error(t("savePromocodeError"));
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -195,10 +235,61 @@ const AdminPromoCodesPage = () => {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (!deleteCourseId) {
+            toast.error(t("selectCourseToDelete"));
+            return;
+        }
+
+        const confirmMessage = deleteCourseId === "ALL" 
+            ? t("deleteAllCodesConfirm")
+            : t("deleteCourseCodesConfirm");
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch("/api/promocodes/bulk-delete", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ courseId: deleteCourseId }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                toast.success(t("codesDeletedSuccess").replace("{count}", result.count.toString()));
+                setIsDeleteDialogOpen(false);
+                setDeleteCourseId("");
+                fetchCodes();
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.error || t("errorOccurred"));
+            }
+        } catch (error) {
+            console.error("Error deleting codes:", error);
+            toast.error(t("deletePromocodeError"));
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const filteredCodes = codes.filter(codeItem =>
         codeItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (codeItem.description && codeItem.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    // Get unique courses that have codes
+    const coursesWithCodes = Array.from(
+        new Map(
+            codes
+                .filter(c => c.courseId && c.course)
+                .map(c => [c.courseId, c.course])
+        ).values()
+    ) as Array<{ id: string; title: string }>;
 
     if (loading) {
         return (
@@ -222,7 +313,17 @@ const AdminPromoCodesPage = () => {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>{t("promocodesList")}</CardTitle>
+                    <div className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} justify-between`}>
+                        <CardTitle>{t("promocodesList")}</CardTitle>
+                        <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => setIsDeleteDialogOpen(true)}
+                        >
+                            <Trash className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
+                            {t("deleteCodes")}
+                        </Button>
+                    </div>
                     <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} space-x-2 mt-4`}>
                         <Search className="h-4 w-4 text-muted-foreground" />
                         <Input
@@ -311,23 +412,25 @@ const AdminPromoCodesPage = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="code">{t("promocodeName")} *</Label>
-                            <Input
-                                id="code"
-                                value={code}
-                                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                                placeholder={t("promocodeCodePlaceholder")}
-                                disabled={!!editingCode}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                {t("promocodeCodeHint")}
-                            </p>
-                        </div>
+                        {editingCode && (
+                            <div className="space-y-2">
+                                <Label htmlFor="code">{t("code")}</Label>
+                                <Input
+                                    id="code"
+                                    value={code}
+                                    readOnly
+                                    className="bg-muted font-mono font-bold text-center"
+                                    placeholder={t("promocodeCodePlaceholder")}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    {t("promocodeCodeHint")}
+                                </p>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="courseId">{t("course")} *</Label>
-                            <Select value={courseId || ""} onValueChange={setCourseId}>
+                            <Select value={courseId || ""} onValueChange={setCourseId} disabled={isGenerating}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t("selectCourseLabel")} />
                                 </SelectTrigger>
@@ -344,12 +447,97 @@ const AdminPromoCodesPage = () => {
                             </p>
                         </div>
 
+                        {!editingCode && (
+                            <div className="space-y-2">
+                                <Label htmlFor="quantity">{t("quantityLabel")} *</Label>
+                                <Input
+                                    id="quantity"
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    value={quantity}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 1;
+                                        if (value >= 1 && value <= 99) {
+                                            setQuantity(value);
+                                        }
+                                    }}
+                                    disabled={isGenerating}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    {t("quantityHint")}
+                                </p>
+                            </div>
+                        )}
+
                         <div className={`flex ${isRTL ? "justify-end" : "justify-start"} ${isRTL ? "space-x-reverse" : ""} gap-2 pt-4`}>
-                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isGenerating}>
                                 {t("cancel")}
                             </Button>
-                            <Button onClick={handleSubmit} className="bg-[#005bd3] hover:bg-[#005bd3]/90">
-                                {editingCode ? t("update") : t("create")}
+                            <Button 
+                                onClick={handleSubmit} 
+                                className="bg-[#005bd3] hover:bg-[#005bd3]/90"
+                                disabled={isGenerating}
+                            >
+                                {isGenerating 
+                                    ? t("generatingCodes")
+                                    : editingCode 
+                                        ? t("update") 
+                                        : t("createCodesButton")}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Delete Dialog */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t("deleteCodesTitle")}</DialogTitle>
+                        <DialogDescription>
+                            {t("deleteCodesDescription")}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="deleteCourseId">{t("course")} *</Label>
+                            <Select 
+                                value={deleteCourseId || ""} 
+                                onValueChange={setDeleteCourseId}
+                                disabled={isDeleting}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t("selectCourseToDeletePlaceholder")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">{t("allDeleteOption")}</SelectItem>
+                                    {coursesWithCodes.map((course) => (
+                                        <SelectItem key={course.id} value={course.id}>
+                                            {course.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className={`flex ${isRTL ? "justify-end" : "justify-start"} ${isRTL ? "space-x-reverse" : ""} gap-2 pt-4`}>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                    setIsDeleteDialogOpen(false);
+                                    setDeleteCourseId("");
+                                }}
+                                disabled={isDeleting}
+                            >
+                                {t("cancel")}
+                            </Button>
+                            <Button 
+                                onClick={handleBulkDelete} 
+                                variant="destructive"
+                                disabled={isDeleting || !deleteCourseId}
+                            >
+                                {isDeleting ? t("deleting") : t("deleteButton")}
                             </Button>
                         </div>
                     </div>

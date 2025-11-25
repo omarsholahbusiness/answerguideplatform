@@ -4,6 +4,43 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { translations } from "@/lib/translations";
 
+/**
+ * Generates a unique 6-character code with uppercase letters and numbers
+ * No duplicate characters within the code
+ */
+async function generateUniqueCode(): Promise<string> {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const maxAttempts = 100;
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const availableChars = characters.split("");
+        const codeChars: string[] = [];
+
+        // Select 6 unique characters
+        for (let i = 0; i < 6; i++) {
+            const randomIndex = Math.floor(Math.random() * availableChars.length);
+            const selectedChar = availableChars[randomIndex];
+            codeChars.push(selectedChar);
+            // Remove the selected character to ensure no duplicates
+            availableChars.splice(randomIndex, 1);
+        }
+
+        const generatedCode = codeChars.join("");
+
+        // Check if code already exists
+        const existingCode = await db.promoCode.findUnique({
+            where: { code: generatedCode },
+        });
+
+        if (!existingCode) {
+            return generatedCode;
+        }
+    }
+
+    // Fallback: if we can't generate a unique code, throw error
+    throw new Error("Unable to generate unique code after multiple attempts");
+}
+
 // GET all promocodes - for teachers and admins
 export async function GET(req: NextRequest) {
     try {
@@ -74,14 +111,21 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { code, courseId } = body;
+        let { code, courseId } = body;
 
         // Validate required fields
-        if (!code || !courseId) {
+        if (!courseId) {
             return new NextResponse(
-                JSON.stringify({ error: "رمز الكوبون والكورس مطلوبان" }),
+                JSON.stringify({ error: "الكورس مطلوب" }),
                 { status: 400, headers: { "Content-Type": "application/json" } }
             );
+        }
+
+        // If no code provided, generate one
+        if (!code || !code.trim()) {
+            code = await generateUniqueCode();
+        } else {
+            code = code.toUpperCase().trim();
         }
 
         // Validate course exists
@@ -97,23 +141,28 @@ export async function POST(req: NextRequest) {
 
         // Check if code already exists
         const existingCode = await db.promoCode.findUnique({
-            where: { code: code.toUpperCase().trim() },
+            where: { code: code },
         });
 
         if (existingCode) {
-            const cookieStore = await cookies();
-            const language = (cookieStore.get("language")?.value as "ar" | "en") || "ar";
-            const t = translations[language];
-            return new NextResponse(
-                JSON.stringify({ error: t.promocodeAlreadyExists }),
-                { status: 400, headers: { "Content-Type": "application/json" } }
-            );
+            // If code exists, try to generate a new one
+            try {
+                code = await generateUniqueCode();
+            } catch (error) {
+                const cookieStore = await cookies();
+                const language = (cookieStore.get("language")?.value as "ar" | "en") || "ar";
+                const t = translations[language];
+                return new NextResponse(
+                    JSON.stringify({ error: t.promocodeAlreadyExists }),
+                    { status: 400, headers: { "Content-Type": "application/json" } }
+                );
+            }
         }
 
         // Create promocode - all promocodes are 100% discount, single use, for specific course
         const newPromoCode = await db.promoCode.create({
             data: {
-                code: code.toUpperCase().trim(),
+                code: code,
                 discountType: "PERCENTAGE",
                 discountValue: 100,
                 usageLimit: 1,

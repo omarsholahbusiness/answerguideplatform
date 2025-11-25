@@ -8,22 +8,39 @@ export async function POST(
     { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const courseOwner = await db.course.findUnique({
-            where: {
-                id: resolvedParams.courseId,
-                userId,
-            }
+        // First check if course exists
+        const existingCourse = await db.course.findUnique({
+            where: { id: resolvedParams.courseId }
         });
 
-        if (!courseOwner) {
-            return new NextResponse("Unauthorized", { status: 401 });
+        if (!existingCourse) {
+            return new NextResponse("Course not found", { status: 404 });
+        }
+
+        // Check permissions:
+        // - ADMIN can update any course
+        // - TEACHER can only update their own courses
+        // - Others cannot update
+        const userRole = (user?.role || "").toUpperCase();
+        const isAdmin = userRole === "ADMIN";
+        const isTeacher = userRole === "TEACHER";
+        const isOwner = existingCourse.userId === userId;
+
+        // Must be ADMIN or TEACHER
+        if (!isAdmin && !isTeacher) {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        // TEACHER can only update their own courses (unless they're also ADMIN)
+        if (isTeacher && !isAdmin && !isOwner) {
+            return new NextResponse("Forbidden - يمكنك تعديل كورساتك فقط", { status: 403 });
         }
 
         const { youtubeUrl } = await req.json();
