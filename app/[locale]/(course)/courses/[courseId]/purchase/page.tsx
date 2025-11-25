@@ -77,55 +77,61 @@ export default function PurchasePage({
   };
 
   const handleValidatePromocode = async () => {
-    if (!promocode.trim() || !course) return;
+    if (!course) return;
 
-    setIsValidatingPromocode(true);
-    try {
-      const response = await fetch("/api/promocodes/validate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          code: promocode.trim(),
-          courseId: course.id,
-        }),
-      });
+    // If there's a promo code, validate it first
+    if (promocode.trim()) {
+      setIsValidatingPromocode(true);
+      try {
+        const response = await fetch("/api/promocodes/validate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: promocode.trim(),
+            courseId: course.id,
+          }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setPromocodeValidation({
-          valid: true,
-          discountAmount: data.discountAmount,
-          finalPrice: data.finalPrice,
-          originalPrice: data.originalPrice,
-        });
-        toast.success(`تم شراء الكورس بقيمة ${data.finalPrice} جنيه`);
-      } else {
-        const errorData = await response.json();
-        setPromocodeValidation({
-          valid: false,
-          discountAmount: "0.00",
-          finalPrice: (course.price || 0).toFixed(2),
-          originalPrice: (course.price || 0).toFixed(2),
-          error: errorData.error || "رمز الكوبون غير صحيح",
-        });
-        toast.error(errorData.error || "رمز الكوبون غير صحيح");
+        if (response.ok) {
+          const data = await response.json();
+          setPromocodeValidation({
+            valid: true,
+            discountAmount: data.discountAmount,
+            finalPrice: data.finalPrice,
+            originalPrice: data.originalPrice,
+          });
+          
+          // Show validation success message first
+          toast.success(`${promocode.trim()} - تم شراء الكورس بقيمة ${data.finalPrice} جنيه`);
+          
+          // Then purchase the course with valid promo code
+          await handlePurchaseWithPromocode(promocode.trim());
+        } else {
+          const errorData = await response.json();
+          setPromocodeValidation({
+            valid: false,
+            discountAmount: "0.00",
+            finalPrice: (course.price || 0).toFixed(2),
+            originalPrice: (course.price || 0).toFixed(2),
+            error: errorData.error || "رمز الكوبون غير صحيح",
+          });
+          toast.error(errorData.error || "رمز الكوبون غير صحيح");
+        }
+      } catch (error) {
+        console.error("Error validating promocode:", error);
+        toast.error("حدث خطأ أثناء التحقق من الكوبون");
+      } finally {
+        setIsValidatingPromocode(false);
       }
-    } catch (error) {
-      console.error("Error validating promocode:", error);
-      toast.error("حدث خطأ أثناء التحقق من الكوبون");
-    } finally {
-      setIsValidatingPromocode(false);
+    } else {
+      // No promo code, purchase directly
+      await handlePurchaseWithPromocode(null);
     }
   };
 
-  const handleRemovePromocode = () => {
-    setPromocode("");
-    setPromocodeValidation(null);
-  };
-
-  const handlePurchase = async () => {
+  const handlePurchaseWithPromocode = async (promocodeValue: string | null) => {
     if (!course) return;
 
     setIsPurchasing(true);
@@ -136,7 +142,7 @@ export default function PurchasePage({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          promocode: promocodeValidation?.valid ? promocode.trim() : null,
+          promocode: promocodeValue,
         }),
       });
 
@@ -160,6 +166,16 @@ export default function PurchasePage({
     } finally {
       setIsPurchasing(false);
     }
+  };
+
+  const handleRemovePromocode = () => {
+    setPromocode("");
+    setPromocodeValidation(null);
+  };
+
+  const handlePurchase = async () => {
+    // Use the same function as Apply button
+    await handlePurchaseWithPromocode(promocodeValidation?.valid ? promocode.trim() : null);
   };
 
   const finalPrice = promocodeValidation?.valid 
@@ -257,7 +273,7 @@ export default function PurchasePage({
                     <Input
                       value={promocode}
                       onChange={(e) => setPromocode(e.target.value.toUpperCase())}
-                      placeholder="أدخل رمز الكوبون"
+                      placeholder="أدخل رمز الكوبون (اختياري)"
                       className="flex-1"
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
@@ -267,10 +283,14 @@ export default function PurchasePage({
                     />
                     <Button
                       onClick={handleValidatePromocode}
-                      disabled={!promocode.trim() || isValidatingPromocode}
+                      disabled={isValidatingPromocode || isPurchasing || !hasSufficientBalance}
                       className="bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
                     >
-                      {isValidatingPromocode ? "جارٍ..." : "تطبيق"}
+                      {isValidatingPromocode || isPurchasing ? (
+                        "جاري الشراء..."
+                      ) : (
+                        "تطبيق / شراء الكورس"
+                      )}
                     </Button>
                   </div>
                 ) : (
@@ -347,21 +367,24 @@ export default function PurchasePage({
               </Card>
             )}
 
-            <Button
-              onClick={handlePurchase}
-              disabled={isPurchasing || !hasSufficientBalance}
-              className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
-              size="lg"
-            >
-              {isPurchasing ? (
-                "جاري الشراء..."
-              ) : (
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  شراء الكورس
-                </div>
-              )}
-            </Button>
+            {/* Only show purchase button if no valid promocode is applied */}
+            {!promocodeValidation?.valid && (
+              <Button
+                onClick={handlePurchase}
+                disabled={isPurchasing || !hasSufficientBalance}
+                className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white"
+                size="lg"
+              >
+                {isPurchasing ? (
+                  "جاري الشراء..."
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    شراء الكورس
+                  </div>
+                )}
+              </Button>
+            )}
 
             <div className="text-center text-sm text-muted-foreground">
               <p>سيتم خصم {finalPrice.toFixed(2)} جنيه من رصيدك</p>
