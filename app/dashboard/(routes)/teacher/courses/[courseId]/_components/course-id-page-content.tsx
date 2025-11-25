@@ -52,7 +52,7 @@ export const CourseIdPageContent = ({
                     label={t("courseNotPublished")}
                 />
             )}
-            <div className="p-6">
+            <div className="p-6" style={{ direction: isRTL ? "rtl" : "ltr" }}>
                 <div className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} justify-between`}>
                     <div className="flex flex-col gap-y-2">
                         <h1 className="text-2xl font-medium" style={{ direction: isRTL ? "rtl" : "ltr" }}>
@@ -62,7 +62,7 @@ export const CourseIdPageContent = ({
                             {t("completeAllFields")} {completionText}
                         </span>
                         {!isComplete && (
-                            <div className="text-xs text-muted-foreground mt-2">
+                            <div className="text-xs text-muted-foreground mt-2" style={{ direction: isRTL ? "rtl" : "ltr" }}>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-1 ${completionStatus.title ? 'text-green-600' : 'text-red-600'}`}>
                                         <span>{completionStatus.title ? '✓' : '✗'}</span>

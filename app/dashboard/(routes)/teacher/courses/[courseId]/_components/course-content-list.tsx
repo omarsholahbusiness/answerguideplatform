@@ -68,11 +68,13 @@ export const CourseContentList = ({
                                         )}
                                         ref={provided.innerRef}
                                         {...provided.draggableProps}
+                                        dir={isRTL ? "rtl" : "ltr"}
                                     >
                                         <div
                                             className={cn(
-                                                "px-2 py-3 border-r border-r-muted hover:bg-muted rounded-l-md transition",
-                                                item.isPublished && "border-r-primary/20"
+                                                "px-2 py-3 hover:bg-muted transition",
+                                                isRTL ? "border-l border-l-muted rounded-r-md" : "border-r border-r-muted rounded-l-md",
+                                                item.isPublished && (isRTL ? "border-l-primary/20" : "border-r-primary/20")
                                             )}
                                             {...provided.dragHandleProps}
                                         >
@@ -86,7 +88,7 @@ export const CourseContentList = ({
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <div className={`${isRTL ? "mr-auto" : "ml-auto"} pr-2 flex items-center ${isRTL ? "flex-row-reverse" : ""} gap-x-2`}>
+                                        <div className={`${isRTL ? "mr-auto" : "ml-auto"} ${isRTL ? "pl-2" : "pr-2"} flex items-center ${isRTL ? "flex-row-reverse" : ""} gap-x-2`}>
                                             {item.type === "chapter" && item.isFree && (
                                                 <Badge>
                                                     {t("free")}

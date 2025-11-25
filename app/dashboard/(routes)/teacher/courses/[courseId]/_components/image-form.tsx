@@ -42,7 +42,7 @@ export const ImageForm = ({
     }
 
     return (
-        <div className="mt-6 border bg-card rounded-md p-4">
+        <div className="mt-6 border bg-card rounded-md p-4" style={{ direction: isRTL ? "rtl" : "ltr" }}>
             <div className={`font-medium flex items-center ${isRTL ? "flex-row-reverse" : ""} justify-between`}>
                 <span className={isRTL ? "text-right" : "text-left"} style={{ direction: isRTL ? "rtl" : "ltr" }}>{t("courseImage")}</span>
                 <Button onClick={toggleEdit} variant="ghost">

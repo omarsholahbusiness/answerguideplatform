@@ -110,11 +110,11 @@ export default function HomePage() {
           >
             <div className="relative w-64 h-64 md:w-80 md:h-80">
               <Image
-                src="/teacher-image.png"
+                src="/teacher-image.jpeg"
                 alt="مصطفي صلاح"
                 fill
                 priority
-                className="object-cover object-[center_25%] rounded-full border-4 border-[#005bd3]/20 shadow-lg"
+                className="object-cover object-[center_25%] border-4 border-[#005bd3]/20 shadow-2xl"
                 sizes="(max-width: 768px) 256px, 320px"
               />
             </div>

@@ -106,9 +106,9 @@ export const CourseContentForm = ({
     ].sort((a, b) => a.position - b.position);
 
     return (
-        <div className="relative mt-6 border bg-card rounded-md p-4">
+        <div className="relative mt-6 border bg-card rounded-md p-4" style={{ direction: isRTL ? "rtl" : "ltr" }}>
             {isUpdating && (
-                <div className="absolute h-full w-full bg-background/50 top-0 right-0 rounded-m flex items-center justify-center">
+                <div className={`absolute h-full w-full bg-background/50 top-0 ${isRTL ? "left-0" : "right-0"} rounded-m flex items-center justify-center`}>
                     <div className="animate-spin h-6 w-6 border-4 border-primary rounded-full border-t-transparent" />
                 </div>
             )}
