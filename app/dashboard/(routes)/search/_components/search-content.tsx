@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, Users, Search } from "lucide-react";
+import { BookOpen, Clock, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRTL } from "@/components/providers/rtl-provider";
@@ -119,17 +119,11 @@ export const SearchContent = ({
                                     </h3>
                                     
                                     {/* Course Stats */}
-                                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                                    <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-4">
                                         <div className="flex items-center gap-1">
                                             <BookOpen className="h-4 w-4" />
                                             <span className="whitespace-nowrap">
                                                 {course.chapters.length} {course.chapters.length === 1 ? t("chapter") : t("chapters")}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Users className="h-4 w-4" />
-                                            <span className="whitespace-nowrap">
-                                                {course._count.purchases} {course._count.purchases === 1 ? t("student") : t("students")}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1">

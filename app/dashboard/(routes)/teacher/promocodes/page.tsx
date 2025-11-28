@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Search, Ticket, Trash } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Edit, Trash2, Search, Ticket, Trash, ChevronUp, ChevronDown, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "@/lib/use-translations";
 import { useRTL } from "@/components/providers/rtl-provider";
@@ -59,7 +60,10 @@ const TeacherPromoCodesPage = () => {
     const [code, setCode] = useState("");
     const [courseId, setCourseId] = useState<string>("");
     const [quantity, setQuantity] = useState<number>(1);
+    const [quantityInput, setQuantityInput] = useState<string>("1");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [selectedCourseForCopy, setSelectedCourseForCopy] = useState<string>("all");
+    const [isCopyPopoverOpen, setIsCopyPopoverOpen] = useState(false);
 
     useEffect(() => {
         fetchCodes();
@@ -110,7 +114,9 @@ const TeacherPromoCodesPage = () => {
         setCode("");
         setCourseId("");
         setQuantity(1);
+        setQuantityInput("1");
         setEditingCode(null);
+        setSelectedCourseForCopy("all");
     };
 
     const openCreateDialog = () => {
@@ -274,6 +280,37 @@ const TeacherPromoCodesPage = () => {
         }
     };
 
+    const handleCopyAllCodes = async () => {
+        // Filter codes based on selected course
+        let filteredCodes = codes.filter(codeItem => codeItem.isActive && codeItem.usedCount === 0);
+        
+        if (selectedCourseForCopy !== "all") {
+            filteredCodes = filteredCodes.filter(codeItem => codeItem.courseId === selectedCourseForCopy);
+        }
+        
+        const availableCodes = filteredCodes.map(codeItem => codeItem.code);
+        
+        if (availableCodes.length === 0) {
+            toast.error(t("noCodesAvailableToCopy"));
+            return;
+        }
+
+        // Join codes with newline
+        const codesText = availableCodes.join("\n");
+        
+        try {
+            await navigator.clipboard.writeText(codesText);
+            const courseName = selectedCourseForCopy === "all" 
+                ? t("allCourses")
+                : courses.find(c => c.id === selectedCourseForCopy)?.title || t("selectedCourse");
+            toast.success(t("copyCodesSuccess").replace("{count}", availableCodes.length.toString()).replace("{course}", courseName));
+            setIsCopyPopoverOpen(false);
+        } catch (error) {
+            console.error("Error copying to clipboard:", error);
+            toast.error(t("copyCodesError"));
+        }
+    };
+
     const filteredCodes = codes.filter(codeItem =>
         codeItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (codeItem.description && codeItem.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -312,14 +349,54 @@ const TeacherPromoCodesPage = () => {
                 <CardHeader>
                     <div className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} justify-between`}>
                         <CardTitle>{t("promocodesList")}</CardTitle>
-                        <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => setIsDeleteDialogOpen(true)}
-                        >
-                            <Trash className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
-                            {t("deleteCodes")}
-                        </Button>
+                        <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <Popover open={isCopyPopoverOpen} onOpenChange={setIsCopyPopoverOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                    >
+                                        <Copy className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
+                                        {t("copyAvailableCodes")}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align={isRTL ? "end" : "start"}>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>{t("selectCourseToCopy")}</Label>
+                                            <Select value={selectedCourseForCopy} onValueChange={setSelectedCourseForCopy}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t("selectCourseToCopy")} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">{t("allCourses")}</SelectItem>
+                                                    {coursesWithCodes.map((course) => (
+                                                        <SelectItem key={course.id} value={course.id}>
+                                                            {course.title}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <Button 
+                                            className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90"
+                                            onClick={handleCopyAllCodes}
+                                        >
+                                            <Copy className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
+                                            {t("copy")}
+                                        </Button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => setIsDeleteDialogOpen(true)}
+                            >
+                                <Trash className={`h-4 w-4 ${isRTL ? "mr-2" : "ml-2"}`} />
+                                {t("deleteCodes")}
+                            </Button>
+                        </div>
                     </div>
                     <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} space-x-2 mt-4`}>
                         <Search className="h-4 w-4 text-muted-foreground" />
@@ -447,20 +524,74 @@ const TeacherPromoCodesPage = () => {
                         {!editingCode && (
                             <div className="space-y-2">
                                 <Label htmlFor="quantity">{t("quantityLabel")} *</Label>
-                                <Input
-                                    id="quantity"
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    value={quantity}
-                                    onChange={(e) => {
-                                        const value = parseInt(e.target.value) || 1;
-                                        if (value >= 1 && value <= 99) {
-                                            setQuantity(value);
-                                        }
-                                    }}
-                                    disabled={isGenerating}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="quantity"
+                                        type="number"
+                                        min="1"
+                                        max="99"
+                                        value={quantityInput}
+                                        onChange={(e) => {
+                                            const inputValue = e.target.value;
+                                            setQuantityInput(inputValue);
+                                            if (inputValue === "") {
+                                                // Allow empty string for deletion
+                                                return;
+                                            }
+                                            const numValue = parseInt(inputValue);
+                                            if (!isNaN(numValue) && numValue >= 1 && numValue <= 99) {
+                                                setQuantity(numValue);
+                                            }
+                                        }}
+                                        onBlur={(e) => {
+                                            const inputValue = e.target.value;
+                                            if (inputValue === "" || parseInt(inputValue) < 1 || isNaN(parseInt(inputValue))) {
+                                                setQuantityInput("1");
+                                                setQuantity(1);
+                                            } else {
+                                                const numValue = parseInt(inputValue);
+                                                if (numValue >= 1 && numValue <= 99) {
+                                                    setQuantityInput(numValue.toString());
+                                                    setQuantity(numValue);
+                                                }
+                                            }
+                                        }}
+                                        disabled={isGenerating}
+                                        className="flex-1"
+                                    />
+                                    <div className="flex flex-col gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => {
+                                                const currentValue = parseInt(quantityInput) || 1;
+                                                const newValue = Math.min(99, currentValue + 1);
+                                                setQuantityInput(newValue.toString());
+                                                setQuantity(newValue);
+                                            }}
+                                            disabled={isGenerating || quantity >= 99}
+                                        >
+                                            <ChevronUp className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => {
+                                                const currentValue = parseInt(quantityInput) || 1;
+                                                const newValue = Math.max(1, currentValue - 1);
+                                                setQuantityInput(newValue.toString());
+                                                setQuantity(newValue);
+                                            }}
+                                            disabled={isGenerating || quantity <= 1}
+                                        >
+                                            <ChevronDown className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
                                 <p className="text-xs text-muted-foreground">
                                     {t("quantityHint")}
                                 </p>

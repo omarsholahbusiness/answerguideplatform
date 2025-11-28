@@ -4,9 +4,9 @@ import { Logo } from "./logo"
 
 export const Navbar = () => {
     return (
-        <div className="p-4 border-b h-full flex items-center bg-card shadow-sm">
+        <div className="py-0 px-4 border-b h-full flex items-center bg-card shadow-sm overflow-visible">
             <MobileSidebar />
-            <div className="hidden md:flex items-center rtl:mr-4 ltr:ml-4">
+            <div className="hidden md:flex items-center rtl:mr-4 ltr:ml-4 h-full">
                 <Logo />
             </div>
             <div className="flex items-center gap-x-4 rtl:mr-auto ltr:ml-auto">

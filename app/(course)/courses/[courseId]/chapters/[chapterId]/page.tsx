@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
@@ -202,7 +202,7 @@ const ChapterPage = () => {
     }
   };
 
-  const onEnd = async () => {
+  const onEnd = useCallback(async () => {
     try {
       if (!isCompleted) {
         await axios.put(`/api/courses/${routeParams.courseId}/chapters/${routeParams.chapterId}/progress`);
@@ -213,7 +213,14 @@ const ChapterPage = () => {
       console.error("Error marking chapter as completed:", error);
       toast.error(t("progressUpdateFailed"));
     }
-  };
+  }, [isCompleted, routeParams.courseId, routeParams.chapterId, router, t]);
+
+  const onTimeUpdate = useCallback((currentTime: number) => {
+    // Only log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🔍 Video time update:", currentTime);
+    }
+  }, []);
 
   const onNext = () => {
     if (chapter?.nextChapterId) {
@@ -291,18 +298,13 @@ const ChapterPage = () => {
                 });
                 return (
                   <PlyrVideoPlayer
-                    key={`${chapter.id}-${chapter.videoUrl}-${chapter.videoType}`}
+                    key={`${chapter.id}-${chapter.videoType}-${chapter.videoType === "YOUTUBE" ? chapter.youtubeVideoId : chapter.videoUrl}`}
                     videoUrl={chapter.videoType === "UPLOAD" ? chapter.videoUrl : undefined}
                     youtubeVideoId={chapter.videoType === "YOUTUBE" ? chapter.youtubeVideoId || undefined : undefined}
                     videoType={(chapter.videoType as "UPLOAD" | "YOUTUBE") || "UPLOAD"}
                     className="w-full h-full"
                     onEnded={onEnd}
-                    onTimeUpdate={(currentTime) => {
-                      // Only log in development
-                      if (process.env.NODE_ENV === 'development') {
-                        console.log("🔍 Video time update:", currentTime);
-                      }
-                    }}
+                    onTimeUpdate={onTimeUpdate}
                   />
                 );
               })()

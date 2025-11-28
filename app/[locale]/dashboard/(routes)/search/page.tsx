@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { SearchInput } from "./_components/search-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Clock, Users, Search } from "lucide-react";
+import { BookOpen, Clock, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Course, Purchase } from "@prisma/client";
@@ -259,16 +259,12 @@ export default async function SearchPage({
                                     </h3>
                                     
                                     {/* Course Stats */}
-                                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                                    <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-4">
                                         <div className="flex items-center gap-1">
                                             <BookOpen className="h-4 w-4" />
                                             <span className="whitespace-nowrap">
                                                 {course.chapters.length} {course.chapters.length === 1 ? "فصل" : "فصول"}
                                             </span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Users className="h-4 w-4" />
-                                            <span className="whitespace-nowrap">{course._count.purchases} طالب</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Clock className="h-4 w-4" />

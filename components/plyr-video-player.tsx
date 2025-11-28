@@ -23,6 +23,14 @@ export const PlyrVideoPlayer = ({
   const html5VideoRef = useRef<HTMLVideoElement>(null);
   const youtubeEmbedRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  const onEndedRef = useRef(onEnded);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onEndedRef.current = onEnded;
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onEnded, onTimeUpdate]);
 
   const YOUTUBE_QUALITY_LABEL_MAP: Record<
     string,
@@ -59,6 +67,16 @@ export const PlyrVideoPlayer = ({
         videoType === "YOUTUBE" ? youtubeEmbedRef.current : html5VideoRef.current;
       if (!targetEl) return;
 
+      // For YouTube, wait a bit to ensure the DOM element is fully ready
+      if (videoType === "YOUTUBE") {
+        // Wait for next frame to ensure DOM is ready
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        // Additional small delay for YouTube embed to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      if (isCancelled) return;
+
       // Dynamically import Plyr to be SSR-safe
       const plyrModule: any = await import("plyr");
       const Plyr: any = plyrModule.default ?? plyrModule;
@@ -67,11 +85,20 @@ export const PlyrVideoPlayer = ({
 
       // Destroy any previous instance
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        playerRef.current.destroy();
+        try {
+          playerRef.current.destroy();
+        } catch (error) {
+          console.warn("Error destroying previous player:", error);
+        }
         playerRef.current = null;
       }
 
-      const player = new Plyr(targetEl, {
+      // Double-check target element still exists after delay
+      const finalTargetEl =
+        videoType === "YOUTUBE" ? youtubeEmbedRef.current : html5VideoRef.current;
+      if (!finalTargetEl || isCancelled) return;
+
+      const player = new Plyr(finalTargetEl, {
         controls: [
           "play-large",
           "play",
@@ -314,14 +341,36 @@ export const PlyrVideoPlayer = ({
       };
 
       if (videoType === "YOUTUBE") {
+        // Set up YouTube-specific event handlers
         player.on("ready", () => {
           disableYoutubeOverlayInteraction();
-          updateYoutubeQualityMenu();
+          // Wait a bit for YouTube embed to be fully ready
+          setTimeout(() => {
+            if (!isCancelled) {
+              updateYoutubeQualityMenu();
+            }
+          }, 300);
         });
+        
+        // Initial setup attempts
         disableYoutubeOverlayInteraction();
-        updateYoutubeQualityMenu();
+        
+        // Try to update quality menu after player is ready (with retry)
+        const tryUpdateQuality = () => {
+          setTimeout(() => {
+            if (!isCancelled && player) {
+              updateYoutubeQualityMenu();
+            }
+          }, 500);
+        };
+        tryUpdateQuality();
 
-        player.on("loadeddata", updateYoutubeQualityMenu);
+        player.on("loadeddata", () => {
+          if (!isCancelled) {
+            updateYoutubeQualityMenu();
+          }
+        });
+        
         player.on("qualitychange", () => {
           const embed = getYoutubeEmbedInstance();
           if (!embed) return;
@@ -338,9 +387,20 @@ export const PlyrVideoPlayer = ({
         });
       }
 
-      if (onEnded) player.on("ended", onEnded);
-      if (onTimeUpdate)
-        player.on("timeupdate", () => onTimeUpdate(player.currentTime || 0));
+      if (onEndedRef.current) {
+        player.on("ended", () => {
+          if (onEndedRef.current) {
+            onEndedRef.current();
+          }
+        });
+      }
+      if (onTimeUpdateRef.current) {
+        player.on("timeupdate", () => {
+          if (onTimeUpdateRef.current) {
+            onTimeUpdateRef.current(player.currentTime || 0);
+          }
+        });
+      }
     }
 
     setupPlayer();
@@ -352,7 +412,9 @@ export const PlyrVideoPlayer = ({
       }
       playerRef.current = null;
     };
-  }, [videoUrl, youtubeVideoId, videoType, onEnded, onTimeUpdate]);
+    // Note: onEnded and onTimeUpdate are intentionally excluded from dependencies
+    // They are stored in refs and updated separately to prevent unnecessary re-initialization
+  }, [videoUrl, youtubeVideoId, videoType]);
 
   const hasVideo = (videoType === "YOUTUBE" && !!youtubeVideoId) || !!videoUrl;
 

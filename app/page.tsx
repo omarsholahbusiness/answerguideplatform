@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown, MessageCircle } from "lucide-react";
+import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/navbar";
@@ -363,7 +363,7 @@ export default function HomePage() {
                       <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                         {course.title}
                       </h3>
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground mb-4">
+                      <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4" />
                           <span>
@@ -372,10 +372,6 @@ export default function HomePage() {
                               <span className={isRTL ? "mr-2" : "ml-2"}>، {course.quizzes.length} {course.quizzes.length === 1 ? t("quiz") : t("quizzes")}</span>
                             )}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          <span>{course.enrollmentCount ?? 0} {t("enrolledStudents")}</span>
                         </div>
                       </div>
                       <Button 
@@ -558,22 +554,139 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WhatsApp Floating Button */}
-      <motion.a
-        href="https://wa.me/201005224432"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1, duration: 0.5 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <div className="w-14 h-14 bg-[#005bd3] hover:bg-[#005bd3]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all">
-          <MessageCircle className="h-7 w-7 text-white" />
-        </div>
-      </motion.a>
+      {/* Facebook Floating Button with Text */}
+      <div className="fixed bottom-24 right-6 z-50 flex items-center gap-3">
+        {isRTL ? (
+          <>
+            <motion.a
+              href="https://www.facebook.com/share/1Ao3YCvEkQ/"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-14 h-14 bg-[#1877F2] hover:bg-[#1877F2]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all overflow-hidden">
+                <Image 
+                  src="/facebook.png" 
+                  alt="Facebook" 
+                  width={56} 
+                  height={56} 
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </motion.a>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+              className="bg-[#1877F2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium whitespace-nowrap"
+            >
+              الصفحة الرسمية
+            </motion.div>
+          </>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+              className="bg-[#1877F2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium whitespace-nowrap"
+            >
+              Official Page
+            </motion.div>
+            <motion.a
+              href="https://www.facebook.com/share/1Ao3YCvEkQ/"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-14 h-14 bg-[#1877F2] hover:bg-[#1877F2]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all overflow-hidden">
+                <Image 
+                  src="/facebook.png" 
+                  alt="Facebook" 
+                  width={56} 
+                  height={56} 
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </motion.a>
+          </>
+        )}
+      </div>
+
+      {/* WhatsApp Floating Button with Text */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+        {isRTL ? (
+          <>
+            <motion.a
+              href="https://wa.me/201005224432"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-14 h-14 bg-[#005bd3] hover:bg-[#005bd3]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all overflow-hidden">
+                <Image 
+                  src="/whats.png" 
+                  alt="WhatsApp" 
+                  width={56} 
+                  height={56} 
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </motion.a>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.3, duration: 0.5 }}
+              className="bg-[#25D366] text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium whitespace-nowrap"
+            >
+              للتواصل معنا
+            </motion.div>
+          </>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.3, duration: 0.5 }}
+              className="bg-[#25D366] text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium whitespace-nowrap"
+            >
+              Contact Us
+            </motion.div>
+            <motion.a
+              href="https://wa.me/201005224432"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-14 h-14 bg-[#005bd3] hover:bg-[#005bd3]/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all overflow-hidden">
+                <Image 
+                  src="/whats.png" 
+                  alt="WhatsApp" 
+                  width={56} 
+                  height={56} 
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </motion.a>
+          </>
+        )}
+      </div>
     </div>
   );
 } 
