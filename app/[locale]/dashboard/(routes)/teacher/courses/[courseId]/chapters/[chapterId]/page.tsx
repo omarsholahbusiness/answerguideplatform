@@ -34,6 +34,11 @@ export default async function ChapterPage({
                     position: 'asc',
                 },
             },
+            audioAttachments: {
+                orderBy: {
+                    position: 'asc',
+                },
+            },
         }
     });
 

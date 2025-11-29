@@ -9,6 +9,15 @@ const CreatePage = async () => {
         return redirect("/");
     }
 
+    // Verify the user exists in the database
+    const user = await db.user.findUnique({
+        where: { id: userId },
+    });
+
+    if (!user) {
+        return redirect("/sign-in");
+    }
+
     const course = await db.course.create({
         data: {
             userId,

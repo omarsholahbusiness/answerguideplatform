@@ -3,8 +3,9 @@
 import { ChapterForm } from "./chapter-form";
 import { VideoForm } from "./video-form";
 import { AttachmentsForm } from "./attachments-form";
+import { AudioAttachmentsForm } from "./audio-attachments-form";
 import Link from "next/link";
-import { ArrowLeft, Video, Files } from "lucide-react";
+import { ArrowLeft, Video, Files, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconBadge } from "@/components/icon-badge";
 import { useTranslations } from "@/lib/use-translations";
@@ -26,6 +27,14 @@ interface ChapterPageContentProps {
             name: string;
             url: string;
             position: number;
+            createdAt: Date;
+        }>;
+        audioAttachments: Array<{
+            id: string;
+            name: string;
+            url: string;
+            position: number;
+            isRecorded: boolean;
             createdAt: Date;
         }>;
     };
@@ -115,6 +124,21 @@ export const ChapterPageContent = ({
                         <AttachmentsForm
                             initialData={{
                                 attachments: chapter.attachments,
+                            }}
+                            courseId={courseId}
+                            chapterId={chapterId}
+                        />
+                    </div>
+                    <div>
+                        <div className={`flex items-center gap-x-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                            <IconBadge icon={Volume2} />
+                            <h2 className={`text-xl ${isRTL ? "text-right" : "text-left"}`} style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                                {t("audioAttachments") || "المرفقات الصوتية"}
+                            </h2>
+                        </div>
+                        <AudioAttachmentsForm
+                            initialData={{
+                                audioAttachments: chapter.audioAttachments || [],
                             }}
                             courseId={courseId}
                             chapterId={chapterId}

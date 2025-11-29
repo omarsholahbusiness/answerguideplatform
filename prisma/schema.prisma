@@ -89,6 +89,7 @@ model Chapter {
 
   userProgress UserProgress[]
   attachments ChapterAttachment[] // New relation for multiple documents
+  audioAttachments ChapterAudioAttachment[] // Audio attachments (voice recordings)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +102,22 @@ model ChapterAttachment {
   name String
   url String @db.Text
   position Int @default(0)
+
+  chapterId String
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chapterId])
+}
+
+model ChapterAudioAttachment {
+  id String @id @default(uuid())
+  name String
+  url String @db.Text
+  position Int @default(0)
+  isRecorded Boolean @default(false) // true if recorded via screen recorder, false if uploaded
 
   chapterId String
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)

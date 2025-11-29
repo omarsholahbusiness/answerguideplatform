@@ -38,6 +38,11 @@ export async function GET(
           orderBy: {
             position: 'asc',
           },
+        },
+        audioAttachments: {
+          orderBy: {
+            position: 'asc',
+          },
         }
       }
     });

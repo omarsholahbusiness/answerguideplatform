@@ -11,6 +11,15 @@ const AdminCreateCoursePage = async () => {
     return redirect("/");
   }
 
+  // Verify the user exists in the database
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    return redirect("/sign-in");
+  }
+
   // Get language preference from cookies, default to Arabic
   const cookieStore = await cookies();
   const language = (cookieStore.get("language")?.value as "ar" | "en") || "ar";

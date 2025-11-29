@@ -32,12 +32,15 @@ function createPrismaClient() {
         }) as any;
     }
 
+    // Use Prisma Accelerate if available
     if (accelerateUrl) {
+        // Prisma Accelerate works with PrismaClientEdge for both Edge and Node runtimes
         return new PrismaClientEdge({
             datasourceUrl: accelerateUrl,
         }).$extends(withAccelerate());
     }
 
+    // Fallback to direct database connection if Accelerate is not available
     if (isEdgeRuntime) {
         throw new Error("PRISMA_ACCELERATE_URL must be set in Edge runtimes.");
     }
@@ -66,7 +69,7 @@ function createPrismaClient() {
     });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+export const db = createPrismaClient();
 
 // Always use singleton pattern to prevent multiple Prisma instances
 // This is critical for serverless environments like Vercel

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock, FileText, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock, FileText, Download, Volume2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PlyrVideoPlayer } from "@/components/plyr-video-player";
@@ -30,6 +30,14 @@ interface Chapter {
     name: string;
     url: string;
     position: number;
+    createdAt: Date;
+  }[];
+  audioAttachments?: {
+    id: string;
+    name: string;
+    url: string;
+    position: number;
+    isRecorded: boolean;
     createdAt: Date;
   }[];
   userProgress?: {
@@ -367,6 +375,47 @@ const ChapterPage = () => {
                         >
                           {t("view")}
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadAttachment(attachment.url, attachment.name)}
+                          className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-1`}
+                        >
+                          <Download className="h-3 w-3" />
+                          {t("download")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Audio Attachments Section */}
+            {(chapter.audioAttachments && chapter.audioAttachments.length > 0) && (
+              <div className="mt-6 p-4 border rounded-lg bg-card">
+                <div className={`flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2 mb-3`}>
+                  <Volume2 className="h-5 w-5 text-muted-foreground" />
+                  <h3 className={`text-lg font-semibold ${isRTL ? "text-right" : "text-left"}`} style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                    {t("audioAttachments") || "المرفقات الصوتية"}
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {chapter.audioAttachments.map((attachment) => (
+                    <div key={attachment.id} className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} p-3 w-full bg-secondary/50 border-secondary/50 border text-secondary-foreground rounded-md`}>
+                      <Volume2 className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"} flex-shrink-0`} />
+                      <div className={`flex flex-col min-w-0 flex-1 ${isRTL ? "text-right" : "text-left"}`}>
+                        <p className="text-sm font-medium truncate" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                          {attachment.name || getFilenameFromUrl(attachment.url)}
+                        </p>
+                        <p className={`text-xs text-muted-foreground ${isRTL ? "text-right" : "text-left"}`} style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                          {attachment.isRecorded ? (t("recordedAudio") || "تسجيل صوتي") : (t("audioFile") || "ملف صوتي")}
+                        </p>
+                      </div>
+                      <div className={`${isRTL ? "ml-auto" : "mr-auto"} flex items-center ${isRTL ? "space-x-reverse" : ""} gap-2 flex-shrink-0`}>
+                        <audio controls className="h-8">
+                          <source src={attachment.url} />
+                        </audio>
                         <Button
                           variant="outline"
                           size="sm"
