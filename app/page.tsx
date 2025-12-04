@@ -10,6 +10,8 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
 import { useRTL } from "@/components/providers/rtl-provider";
 import { useTranslations } from "@/lib/use-translations";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Define types based on Prisma schema
 type Course = {
@@ -37,6 +39,8 @@ export default function HomePage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const { isRTL, language } = useRTL();
   const { t } = useTranslations();
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -94,6 +98,23 @@ export default function HomePage() {
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleCourseClick = (course: CourseWithProgress, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!session?.user) {
+      // Redirect to sign-in page if not authenticated
+      router.push("/sign-in");
+      return;
+    }
+    
+    // If authenticated, navigate to the course
+    const courseUrl = course.chapters && course.chapters.length > 0 
+      ? `/courses/${course.id}/chapters/${course.chapters[0].id}` 
+      : `/courses/${course.id}`;
+    router.push(courseUrl);
   };
 
   return (
@@ -377,11 +398,9 @@ export default function HomePage() {
                       <Button 
                         className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white" 
                         variant="default"
-                        asChild
+                        onClick={(e) => handleCourseClick(course, e)}
                       >
-                        <Link href={course.chapters && course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
                           {t("viewCourse")}
-                        </Link>
                       </Button>
                     </div>
                   </motion.div>

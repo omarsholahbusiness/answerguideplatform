@@ -27,7 +27,7 @@ async function generateUniqueCode(): Promise<string> {
 
         const generatedCode = codeChars.join("");
 
-        // Check if code already exists
+        // Check if code already exists (including soft-deleted codes to prevent reuse)
         const existingCode = await db.promoCode.findUnique({
             where: { code: generatedCode },
         });
@@ -55,30 +55,73 @@ export async function GET(req: NextRequest) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        // Fetch promocodes with course relation
+        // Fetch promocodes with course relation (exclude soft-deleted codes)
         let promocodes;
         try {
-            promocodes = await db.promoCode.findMany({
-                include: {
-                    course: {
-                        select: {
-                            id: true,
-                            title: true,
+            // Try to fetch with deletedAt filter (if migration has been applied)
+            try {
+                promocodes = await db.promoCode.findMany({
+                    where: {
+                        deletedAt: null, // Only get non-deleted codes
+                    },
+                    include: {
+                        course: {
+                            select: {
+                                id: true,
+                                title: true,
+                            },
                         },
                     },
-                },
-                orderBy: {
-                    createdAt: "desc",
-                },
-            });
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                });
+            } catch (deletedAtError: any) {
+                // If deletedAt column doesn't exist yet (migration not applied), fetch all codes
+                if (deletedAtError?.message?.includes("deletedAt") || deletedAtError?.code === "P2021") {
+                    console.warn("[PROMOCODES_GET] deletedAt column not found, fetching all codes (migration may not be applied)");
+                    promocodes = await db.promoCode.findMany({
+                        include: {
+                            course: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
+                        },
+                        orderBy: {
+                            createdAt: "desc",
+                        },
+                    });
+                } else {
+                    throw deletedAtError;
+                }
+            }
         } catch (includeError) {
             // If include fails, try without it (for backward compatibility)
             console.warn("[PROMOCODES_GET] Failed to include course relation, fetching without it:", includeError);
-            promocodes = await db.promoCode.findMany({
-                orderBy: {
-                    createdAt: "desc",
-                },
-            });
+            try {
+                promocodes = await db.promoCode.findMany({
+                    where: {
+                        deletedAt: null, // Only get non-deleted codes
+                    },
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                });
+            } catch (deletedAtError2: any) {
+                // If deletedAt column doesn't exist yet, fetch all codes
+                if (deletedAtError2?.message?.includes("deletedAt") || deletedAtError2?.code === "P2021") {
+                    console.warn("[PROMOCODES_GET] deletedAt column not found, fetching all codes");
+                    promocodes = await db.promoCode.findMany({
+                        orderBy: {
+                            createdAt: "desc",
+                        },
+                    });
+                } else {
+                    throw deletedAtError2;
+                }
+            }
         }
 
         return NextResponse.json(promocodes);
@@ -139,13 +182,13 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check if code already exists
+        // Check if code already exists (including soft-deleted codes to prevent reuse)
         const existingCode = await db.promoCode.findUnique({
             where: { code: code },
         });
 
         if (existingCode) {
-            // If code exists, try to generate a new one
+            // If code exists (even if soft-deleted), try to generate a new one
             try {
                 code = await generateUniqueCode();
             } catch (error) {

@@ -273,10 +273,12 @@ model PromoCode {
     description String? @db.Text // وصف الكوبون (اختياري)
     courseId String? // الكورس المحدد (اختياري - إذا كان null يعمل على جميع الكورسات)
     course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+    deletedAt DateTime? // تاريخ الحذف (للحذف الناعم - soft delete)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     @@index([code])
     @@index([isActive])
     @@index([courseId])
+    @@index([deletedAt])
 }

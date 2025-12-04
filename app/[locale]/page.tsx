@@ -9,7 +9,8 @@ import Image from "next/image";
 import { Navbar } from "@/components/navbar";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 // Define types based on Prisma schema
 type Course = {
@@ -39,6 +40,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const t = useTranslations("homepage");
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -96,6 +99,24 @@ export default function HomePage() {
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleCourseClick = (course: CourseWithProgress, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!session?.user) {
+      // Redirect to sign-in page if not authenticated (with locale if applicable)
+      const signInUrl = locale ? `/${locale}/sign-in` : "/sign-in";
+      router.push(signInUrl);
+      return;
+    }
+    
+    // If authenticated, navigate to the course
+    const courseUrl = course.chapters && course.chapters.length > 0 
+      ? `/${locale}/courses/${course.id}/chapters/${course.chapters[0].id}` 
+      : `/${locale}/courses/${course.id}`;
+    router.push(courseUrl);
   };
 
   return (
@@ -379,11 +400,9 @@ export default function HomePage() {
                       <Button 
                         className="w-full bg-[#005bd3] hover:bg-[#005bd3]/90 text-white" 
                         variant="default"
-                        asChild
+                        onClick={(e) => handleCourseClick(course, e)}
                       >
-                        <LocaleLink href={course.chapters && course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
                           {t("viewCourse")}
-                        </LocaleLink>
                       </Button>
                     </div>
                   </motion.div>

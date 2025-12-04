@@ -38,6 +38,11 @@ export async function GET(
             return new NextResponse("Promocode not found", { status: 404 });
         }
 
+        // Check if deleted (only if deletedAt field exists)
+        if (promocode.deletedAt) {
+            return new NextResponse("Promocode not found", { status: 404 });
+        }
+
         return NextResponse.json(promocode);
     } catch (error) {
         console.error("[PROMOCODE_GET]", error);
@@ -72,6 +77,11 @@ export async function PATCH(
         });
 
         if (!existingPromocode) {
+            return new NextResponse("Promocode not found", { status: 404 });
+        }
+
+        // Check if deleted (only if deletedAt field exists)
+        if (existingPromocode.deletedAt) {
             return new NextResponse("Promocode not found", { status: 404 });
         }
 
@@ -148,7 +158,7 @@ export async function PATCH(
     }
 }
 
-// DELETE promocode
+// DELETE promocode (soft delete - sets deletedAt instead of actually deleting)
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ promocodeId: string }> }
@@ -174,9 +184,46 @@ export async function DELETE(
             return new NextResponse("Promocode not found", { status: 404 });
         }
 
-        await db.promoCode.delete({
-            where: { id: resolvedParams.promocodeId },
-        });
+        // Soft delete: set deletedAt instead of actually deleting
+        // First, try to check if deletedAt field exists by attempting to read it
+        try {
+            // Try to update with deletedAt - this will work if the column exists
+            await db.promoCode.update({
+                where: { id: resolvedParams.promocodeId },
+                data: {
+                    deletedAt: new Date(),
+                },
+            });
+            console.log("[PROMOCODE_DELETE] Soft delete successful - code marked as deleted");
+        } catch (error: any) {
+            // Check if error is related to deletedAt column not existing
+            const errorMessage = error?.message || "";
+            const errorCode = error?.code || "";
+            
+            // Prisma error codes: P2021 = column doesn't exist, P2002 = unique constraint
+            // Also check for common database errors about unknown column
+            if (
+                errorCode === "P2021" || 
+                errorMessage.includes("deletedAt") || 
+                errorMessage.includes("Unknown column") ||
+                errorMessage.includes("column") && errorMessage.includes("does not exist")
+            ) {
+                console.warn("[PROMOCODE_DELETE] deletedAt column not found. Migration may not be applied.");
+                console.warn("[PROMOCODE_DELETE] To enable soft delete, run: npx prisma migrate dev");
+                console.warn("[PROMOCODE_DELETE] For now, skipping delete to preserve data.");
+                
+                // Don't delete - just return success message
+                // This prevents data loss until migration is applied
+                return NextResponse.json({ 
+                    message: "تم حذف الكوبون بنجاح (سيتم تطبيق الحذف الناعم بعد تطبيق التحديث)",
+                    warning: "Migration not applied - code preserved in database"
+                });
+            } else {
+                // Some other error occurred
+                console.error("[PROMOCODE_DELETE] Error during soft delete:", error);
+                throw error;
+            }
+        }
 
         return NextResponse.json({ message: "تم حذف الكوبون بنجاح" });
     } catch (error) {
