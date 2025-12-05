@@ -46,8 +46,11 @@ export default function HomePage() {
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        // Fetch courses from public API endpoint
-        const response = await fetch("/api/courses/public");
+        // Fetch courses from public API endpoint with cache
+        const response = await fetch("/api/courses/public", {
+          cache: 'force-cache', // Use cached response when available
+          next: { revalidate: 300 }, // Revalidate every 5 minutes
+        });
         
         if (!response.ok) {
           console.error("Failed to fetch courses:", response.status, response.statusText);

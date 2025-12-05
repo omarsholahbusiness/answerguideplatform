@@ -2,27 +2,41 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-// Cache the response for 60 seconds to improve performance
-export const revalidate = 60;
+// Cache the response for 5 minutes to improve performance
+export const revalidate = 300;
+export const dynamic = 'force-dynamic'; // Allow per-request filtering
 
 export async function GET() {
   try {
-    // Try to get user for filtering
+    // Try to get user for filtering (non-blocking - don't wait if it fails)
     let userId = null;
     let student = null;
     
+    // Use Promise.race to timeout auth check quickly
     try {
-      const authResult = await auth();
-      userId = authResult.userId;
+      const authPromise = auth();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth timeout')), 2000)
+      );
+      
+      const authResult = await Promise.race([authPromise, timeoutPromise]) as any;
+      userId = authResult?.userId;
       
       if (userId) {
-        student = await db.user.findUnique({
+        // Fetch student info with timeout
+        const studentPromise = db.user.findUnique({
           where: { id: userId },
           select: { grade: true, role: true }
         });
+        const studentTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Student fetch timeout')), 1000)
+        );
+        
+        student = await Promise.race([studentPromise, studentTimeout]) as any;
       }
     } catch (error) {
-      // User not authenticated, continue without filtering
+      // User not authenticated or timeout - continue without filtering (faster)
+      // This allows the page to load quickly even if auth is slow
     }
 
     // Build where clause - same filtering logic as main courses API
@@ -45,8 +59,10 @@ export async function GET() {
     }
 
     // Optimized query: fetch courses with minimal data
+    // Use take to limit results if needed (adjust based on your needs)
     const courses = await db.course.findMany({
       where: whereClause,
+      take: 50, // Limit to 50 courses max for better performance
       select: {
         id: true,
         title: true,
@@ -62,6 +78,7 @@ export async function GET() {
           select: {
             id: true,
           },
+          take: 1, // Only need first chapter ID for navigation
         },
         quizzes: {
           where: {
@@ -70,6 +87,7 @@ export async function GET() {
           select: {
             id: true,
           },
+          take: 1, // Only need count, not all quiz IDs
         },
         _count: {
           select: {
@@ -94,7 +112,12 @@ export async function GET() {
       enrollmentCount: _count.purchases,
     }));
 
-    return NextResponse.json(coursesWithDefaultProgress);
+    // Add caching headers for better performance
+    return NextResponse.json(coursesWithDefaultProgress, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error("[COURSES_PUBLIC] Full error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";

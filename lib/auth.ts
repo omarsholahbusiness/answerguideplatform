@@ -40,11 +40,23 @@ export const authOptions: AuthOptions = {
           throw new Error("Missing credentials");
         }
 
-        const user = await db.user.findUnique({
+        let user;
+        try {
+          user = await db.user.findUnique({
           where: {
             phoneNumber: credentials.phoneNumber,
           },
         });
+        } catch (error: any) {
+          // Handle connection errors gracefully
+          if (error?.message?.includes("Can't reach database") || 
+              error?.code === "P1001" || 
+              error?.code === "P1017") {
+            console.error("[AUTH] Database connection error:", error.message);
+            throw new Error("Database connection failed. Please try again.");
+          }
+          throw error;
+        }
 
         if (!user || !user.hashedPassword) {
           throw new Error("Invalid credentials");
@@ -106,17 +118,32 @@ export const authOptions: AuthOptions = {
       }
 
       // On subsequent requests, refresh role from database to ensure it's up to date
-      if (token?.id) {
+      // Only refresh if role is not already in token to reduce database calls
+      // Add timeout to prevent blocking if database is slow
+      if (token?.id && !token.role) {
         try {
-          const dbUser = await db.user.findUnique({
+          // Add timeout to prevent slow database from blocking auth
+          const rolePromise = db.user.findUnique({
             where: { id: token.id as string },
             select: { role: true },
           });
-          if (dbUser) {
-            token.role = dbUser.role?.toUpperCase() || "USER";
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Role fetch timeout')), 2000)
+          );
+          
+          const dbUser = await Promise.race([rolePromise, timeoutPromise]) as any;
+          if (dbUser?.role) {
+            token.role = dbUser.role.toUpperCase() || "USER";
+          } else {
+            token.role = "USER"; // Default if not found
           }
         } catch (error) {
-          console.error("Error refreshing user role:", error);
+          // Silently fail - use existing role or default to USER
+          // Don't log timeout errors to reduce noise
+          if (!(error as Error)?.message?.includes('timeout')) {
+            console.error("Error refreshing user role:", error);
+          }
+          token.role = token.role || "USER";
         }
       }
 

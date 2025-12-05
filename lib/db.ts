@@ -51,9 +51,8 @@ function createPrismaClient() {
         throw new Error("Missing DATABASE_URL or DIRECT_DATABASE_URL environment variable.");
     }
 
-    // Add connection pooling parameters to prevent "too many connections" error
-    // For serverless (Vercel), use connection_limit=1 per function
-    // This ensures each serverless function only uses 1 connection
+    // Add connection pooling parameters
+    // Increased connection limit for better concurrency (but still limited to prevent too many connections)
     let connectionUrl = datasourceUrl;
     
     // Build query parameters
@@ -66,14 +65,17 @@ function createPrismaClient() {
     }
     
     // Add/update connection parameters
+    // Set connection_limit to 3 for better balance (not too high to avoid "too many connections")
     if (!urlParams.has('connection_limit')) {
-        urlParams.set('connection_limit', '1');
+        urlParams.set('connection_limit', '3');
     }
+    // Increased pool_timeout to handle more concurrent requests
     if (!urlParams.has('pool_timeout')) {
-        urlParams.set('pool_timeout', '20');
+        urlParams.set('pool_timeout', '30');
     }
+    // Increase connect_timeout for slow connections
     if (!urlParams.has('connect_timeout')) {
-        urlParams.set('connect_timeout', '10');
+        urlParams.set('connect_timeout', '15');
     }
     // Add keepalive to prevent connection resets
     if (!urlParams.has('keepalive')) {
@@ -82,15 +84,26 @@ function createPrismaClient() {
     if (!urlParams.has('keepalive_idle')) {
         urlParams.set('keepalive_idle', '600');
     }
+    // Add statement timeout to prevent long-running queries from holding connections
+    if (!urlParams.has('statement_timeout')) {
+        urlParams.set('statement_timeout', '30000'); // 30 seconds
+    }
     
     connectionUrl = `${connectionUrl}?${urlParams.toString()}`;
 
-    return new PrismaClientNode({
+    const client = new PrismaClientNode({
         datasources: {
             db: { url: connectionUrl },
         },
         log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
+
+    // Add connection error handling
+    client.$on('error' as never, (e: any) => {
+        console.error('[Prisma Client Error]', e);
+    });
+
+    return client;
 }
 
 export const db = createPrismaClient();
