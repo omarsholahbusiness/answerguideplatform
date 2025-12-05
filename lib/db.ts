@@ -55,11 +55,35 @@ function createPrismaClient() {
     // For serverless (Vercel), use connection_limit=1 per function
     // This ensures each serverless function only uses 1 connection
     let connectionUrl = datasourceUrl;
-    if (!connectionUrl.includes('connection_limit')) {
-        connectionUrl = connectionUrl.includes('?') 
-            ? `${connectionUrl}&connection_limit=1&pool_timeout=20`
-            : `${connectionUrl}?connection_limit=1&pool_timeout=20`;
+    
+    // Build query parameters
+    const urlParams = new URLSearchParams();
+    if (connectionUrl.includes('?')) {
+        const [baseUrl, existingParams] = connectionUrl.split('?');
+        const existing = new URLSearchParams(existingParams);
+        existing.forEach((value, key) => urlParams.set(key, value));
+        connectionUrl = baseUrl;
     }
+    
+    // Add/update connection parameters
+    if (!urlParams.has('connection_limit')) {
+        urlParams.set('connection_limit', '1');
+    }
+    if (!urlParams.has('pool_timeout')) {
+        urlParams.set('pool_timeout', '20');
+    }
+    if (!urlParams.has('connect_timeout')) {
+        urlParams.set('connect_timeout', '10');
+    }
+    // Add keepalive to prevent connection resets
+    if (!urlParams.has('keepalive')) {
+        urlParams.set('keepalive', 'true');
+    }
+    if (!urlParams.has('keepalive_idle')) {
+        urlParams.set('keepalive_idle', '600');
+    }
+    
+    connectionUrl = `${connectionUrl}?${urlParams.toString()}`;
 
     return new PrismaClientNode({
         datasources: {

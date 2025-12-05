@@ -2,6 +2,9 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+// Cache the response for 60 seconds to improve performance
+export const revalidate = 60;
+
 export async function GET() {
   try {
     // Try to get user for filtering
@@ -41,9 +44,17 @@ export async function GET() {
       ];
     }
 
+    // Optimized query: fetch courses with minimal data
     const courses = await db.course.findMany({
       where: whereClause,
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        price: true,
+        createdAt: true,
+        updatedAt: true,
         chapters: {
           where: {
             isPublished: true,
@@ -60,12 +71,13 @@ export async function GET() {
             id: true,
           },
         },
-        purchases: {
-          where: {
-            status: "ACTIVE",
-          },
+        _count: {
           select: {
-            id: true,
+            purchases: {
+              where: {
+                status: "ACTIVE",
+              },
+            },
           },
         },
       },
@@ -75,17 +87,28 @@ export async function GET() {
     });
 
     // Return courses with default progress of 0 for public view
-    const coursesWithDefaultProgress = courses.map(({ purchases, ...course }) => ({
+    // Use _count instead of loading all purchases for better performance
+    const coursesWithDefaultProgress = courses.map(({ _count, ...course }) => ({
       ...course,
       progress: 0,
-      enrollmentCount: purchases.length,
+      enrollmentCount: _count.purchases,
     }));
 
     return NextResponse.json(coursesWithDefaultProgress);
   } catch (error) {
-    console.error("[COURSES_PUBLIC]", error);
+    console.error("[COURSES_PUBLIC] Full error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    console.error("[COURSES_PUBLIC] Error details:", errorMessage);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[COURSES_PUBLIC] Error message:", errorMessage);
+    if (errorStack) {
+      console.error("[COURSES_PUBLIC] Error stack:", errorStack);
+    }
+    
+    // Check for Prisma error codes
+    const prismaErrorCode = (error as any)?.code;
+    if (prismaErrorCode) {
+      console.error("[COURSES_PUBLIC] Prisma error code:", prismaErrorCode);
+    }
     
     // If the table doesn't exist or there's a database connection issue,
     // return an empty array instead of an error
@@ -94,9 +117,21 @@ export async function GET() {
       error.message.includes("P2021") ||
       error.message.includes("table") ||
       error.message.includes("too many") ||
-      error.message.includes("connection")
+      error.message.includes("connection") ||
+      error.message.includes("Can't reach database") ||
+      error.message.includes("Accelerate was not able to connect") ||
+      prismaErrorCode === "P1001" || // Can't reach database server
+      prismaErrorCode === "P1017" || // Server has closed the connection
+      prismaErrorCode === "P5000" || // Unknown error (often connection related)
+      prismaErrorCode === "P6008"    // Accelerate connection error
     )) {
       console.error("[COURSES_PUBLIC] Database connection issue, returning empty array");
+      console.error("[COURSES_PUBLIC] Error code:", prismaErrorCode);
+      console.error("[COURSES_PUBLIC] This usually means:");
+      console.error("  1. Database server is down or unreachable");
+      console.error("  2. IP address not whitelisted in Aiven");
+      console.error("  3. Network/firewall blocking connection");
+      console.error("  4. Database credentials are incorrect");
       return NextResponse.json([]);
     }
     
@@ -104,6 +139,7 @@ export async function GET() {
       JSON.stringify({ 
         error: "Internal Error", 
         message: errorMessage,
+        code: prismaErrorCode,
         details: process.env.NODE_ENV === "development" ? String(error) : undefined
       }), 
       { 
