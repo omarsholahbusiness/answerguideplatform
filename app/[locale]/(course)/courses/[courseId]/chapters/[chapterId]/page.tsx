@@ -102,46 +102,26 @@ const ChapterPage = () => {
   };
 
   // Helper function to download attachment
-  const downloadAttachment = async (url: string, name: string) => {
+  const downloadAttachment = async (attachmentId: string, url: string, name: string) => {
     try {
-      // For uploadthing URLs, we'll use a different approach
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-      });
+      // Use the API route to download the attachment (handles CORS and proper download headers)
+      const downloadUrl = `/api/courses/${routeParams.courseId}/chapters/${routeParams.chapterId}/attachments/${attachmentId}/download`;
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = name || getFilenameFromUrl(url);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        window.URL.revokeObjectURL(downloadUrl);
-        toast.success("تم بدء تحميل الملف");
-      } else {
-        throw new Error('Failed to fetch file');
-      }
-    } catch (error) {
-      console.error('Download failed:', error);
-      
-      // If CORS fails or any other error, use the browser's native download behavior
+      // Create a temporary link and trigger download
       const link = document.createElement('a');
-      link.href = url;
+      link.href = downloadUrl;
       link.download = name || getFilenameFromUrl(url);
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      
-      // Try to trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      toast.success("تم فتح الملف في تبويب جديد للتحميل");
+      toast.success("تم بدء تحميل الملف");
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error("فشل تحميل الملف");
+      
+      // Fallback: open original URL in new tab
+      window.open(url, '_blank');
     }
   };
 
@@ -374,7 +354,7 @@ const ChapterPage = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => downloadAttachment(attachment.url, attachment.name)}
+                          onClick={() => downloadAttachment(attachment.id, attachment.url, attachment.name)}
                           className="flex items-center gap-1"
                         >
                           <Download className="h-3 w-3" />
@@ -413,7 +393,29 @@ const ChapterPage = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => downloadAttachment(attachment.url, attachment.name)}
+                          onClick={async () => {
+                            try {
+                              // For audio attachments, download directly (they're stored differently)
+                              const response = await fetch(attachment.url);
+                              if (response.ok) {
+                                const blob = await response.blob();
+                                const downloadUrl = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = downloadUrl;
+                                link.download = attachment.name || getFilenameFromUrl(attachment.url);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(downloadUrl);
+                                toast.success("تم بدء تحميل الملف");
+                              } else {
+                                window.open(attachment.url, '_blank');
+                              }
+                            } catch (error) {
+                              console.error('Download failed:', error);
+                              window.open(attachment.url, '_blank');
+                            }
+                          }}
                           className="flex items-center gap-1"
                         >
                           <Download className="h-3 w-3" />
