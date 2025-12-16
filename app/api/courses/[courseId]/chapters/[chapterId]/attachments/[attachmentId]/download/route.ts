@@ -1,18 +1,22 @@
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ courseId: string; chapterId: string; attachmentId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        // Get session directly instead of using auth() which redirects
+        const session = await getServerSession(authOptions);
         const resolvedParams = await params;
 
-        if (!userId) {
+        if (!session?.user?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
+        
+        const userId = session.user.id;
 
         // Get the attachment
         const attachment = await db.chapterAttachment.findUnique({
@@ -72,7 +76,7 @@ export async function GET(
 
         // Get the file content and headers
         const fileBuffer = await response.arrayBuffer();
-        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+        const originalContentType = response.headers.get('content-type') || 'application/octet-stream';
         
         // Extract filename from URL or use stored name
         const filename = attachment.name || (() => {
@@ -93,21 +97,30 @@ export async function GET(
         // Derive Content-Length
         const contentLength = String(fileBuffer.byteLength);
 
+        // Use application/octet-stream to force download instead of opening in browser
+        // This ensures the file is downloaded rather than displayed
+        const downloadContentType = 'application/octet-stream';
+
         // Create response with download headers
         const downloadResponse = new NextResponse(fileBuffer, {
             status: 200,
             headers: {
-                'Content-Type': contentType,
+                'Content-Type': downloadContentType,
                 'Content-Length': contentLength,
                 'Content-Disposition': `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFilename}`,
                 'Cache-Control': 'no-cache',
+                'X-Content-Type-Options': 'nosniff', // Prevent browser from sniffing content type
             },
         });
 
         return downloadResponse;
-    } catch (error) {
-        console.log("[CHAPTER_ATTACHMENT_DOWNLOAD]", error);
-        return new NextResponse("Internal Error", { status: 500 });
+    } catch (error: any) {
+        console.error("[CHAPTER_ATTACHMENT_DOWNLOAD] Error:", error);
+        // If it's a redirect error from auth, return 401
+        if (error?.digest === 'NEXT_REDIRECT') {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+        return new NextResponse(`Internal Error: ${error?.message || 'Unknown error'}`, { status: 500 });
     }
 }
 

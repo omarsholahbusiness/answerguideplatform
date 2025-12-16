@@ -57,47 +57,45 @@ export const AttachmentsForm = ({
     };
 
     // Helper function to download document
-    const downloadDocument = async (url: string, name: string) => {
+    const downloadDocument = async (attachmentId: string, url: string, name: string) => {
         try {
-            // For uploadthing URLs, we'll use a different approach
-            // First, try to fetch the file with proper CORS handling
-            const response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors',
-            });
+            // Use the API route to download the attachment (handles CORS and proper download headers)
+            const downloadUrl = `/api/courses/${courseId}/chapters/${chapterId}/attachments/${attachmentId}/download`;
             
-            if (response.ok) {
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.download = name || getFilenameFromUrl(url);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                window.URL.revokeObjectURL(downloadUrl);
-                toast.success("تم بدء تحميل الملف");
-            } else {
-                throw new Error('Failed to fetch file');
-            }
-        } catch (error) {
-            console.error('Download failed:', error);
-            
-            // If CORS fails or any other error, use the browser's native download behavior
+            // Use window.location.href to force download (the API route sets Content-Disposition: attachment)
+            // This is more reliable than fetch + blob for forcing downloads
             const link = document.createElement('a');
-            link.href = url;
+            link.href = downloadUrl;
             link.download = name || getFilenameFromUrl(url);
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            
-            // Try to trigger download
+            link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
             
-            toast.success("تم فتح الملف في تبويب جديد للتحميل");
+            // Clean up after a short delay
+            setTimeout(() => {
+                document.body.removeChild(link);
+            }, 100);
+            
+            toast.success("تم بدء تحميل الملف");
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error("فشل تحميل الملف");
+            
+            // Fallback: try direct download with forced download attribute
+            try {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = name || getFilenameFromUrl(url);
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
+            } catch (fallbackError) {
+                console.error('Fallback download failed:', fallbackError);
+                window.open(url, '_blank');
+            }
         }
     };
 
@@ -192,7 +190,7 @@ export const AttachmentsForm = ({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => downloadDocument(attachment.url, attachment.name)}
+                                            onClick={() => downloadDocument(attachment.id, attachment.url, attachment.name)}
                                             className="flex items-center gap-1"
                                         >
                                             <Download className="h-3 w-3" />

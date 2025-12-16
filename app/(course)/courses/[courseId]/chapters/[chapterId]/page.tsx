@@ -111,21 +111,40 @@ const ChapterPage = () => {
       // Use the API route to download the attachment (handles CORS and proper download headers)
       const downloadUrl = `/api/courses/${routeParams.courseId}/chapters/${routeParams.chapterId}/attachments/${attachmentId}/download`;
       
-      // Create a temporary link and trigger download
+      // Use window.location.href to force download (the API route sets Content-Disposition: attachment)
+      // This is more reliable than fetch + blob for forcing downloads
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = name || getFilenameFromUrl(url);
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      
+      // Clean up after a short delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
       
       toast.success(t("downloadStarted"));
     } catch (error) {
       console.error('Download failed:', error);
       toast.error("فشل تحميل الملف");
       
-      // Fallback: open original URL in new tab
-      window.open(url, '_blank');
+      // Fallback: try direct download with forced download attribute
+      try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = name || getFilenameFromUrl(url);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+        }, 100);
+      } catch (fallbackError) {
+        console.error('Fallback download failed:', fallbackError);
+        window.open(url, '_blank');
+      }
     }
   };
 
