@@ -13,11 +13,31 @@ export async function POST(req: Request) {
       studyType,
       governorate,
       password, 
-      confirmPassword 
+      confirmPassword,
+      captchaToken
     } = await req.json();
 
     if (!fullName || !phoneNumber || !parentPhoneNumber || !password || !confirmPassword) {
       return new NextResponse("Missing required fields", { status: 400 });
+    }
+
+    // Verify reCAPTCHA (only if configured)
+    const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecretKey) {
+      if (!captchaToken) {
+        return new NextResponse("Captcha verification required", { status: 400 });
+      }
+
+      // Verify captcha token with Google
+      const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${captchaToken}`;
+      const recaptchaResponse = await fetch(verifyUrl, {
+        method: "POST",
+      });
+      const recaptchaData = await recaptchaResponse.json();
+
+      if (!recaptchaData.success) {
+        return new NextResponse("Invalid captcha. Please try again.", { status: 400 });
+      }
     }
 
     if (password !== confirmPassword) {
