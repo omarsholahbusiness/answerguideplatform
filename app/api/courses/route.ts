@@ -105,54 +105,67 @@ export async function GET(req: Request) {
     });
 
     if (includeProgress && userId) {
-      const coursesWithProgress = await Promise.all(
-        courses.map(async (course) => {
-          const totalChapters = course.chapters.length;
-          const totalQuizzes = course.quizzes.length;
-          const totalContent = totalChapters + totalQuizzes;
+      // Batch all progress queries to avoid N+1 problem
+      // Collect all chapter and quiz IDs from all courses
+      const allChapterIds: string[] = [];
+      const allQuizIds: string[] = [];
+      courses.forEach(course => {
+        if (course.purchases && course.purchases.length > 0) {
+          allChapterIds.push(...course.chapters.map(ch => ch.id));
+          allQuizIds.push(...course.quizzes.map(q => q.id));
+        }
+      });
 
-          let completedChapters = 0;
-          let completedQuizzes = 0;
-
-          if (course.purchases && course.purchases.length > 0) {
-            // Get completed chapters
-            completedChapters = await db.userProgress.count({
-              where: {
-                userId,
-                chapterId: {
-                  in: course.chapters.map(chapter => chapter.id)
-                },
-                isCompleted: true
-              }
-            });
-
-            // Get completed quizzes
-            const completedQuizResults = await db.quizResult.findMany({
-                where: {
-                    studentId: userId,
-                    quizId: {
-                        in: course.quizzes.map(quiz => quiz.id)
-                    }
-                },
-                select: {
-                    quizId: true
-                }
-            });
-
-            // Count unique quizIds
-            const uniqueQuizIds = new Set(completedQuizResults.map(result => result.quizId));
-            completedQuizzes = uniqueQuizIds.size;
+      // Get all completed chapters and quizzes in parallel (one query each instead of N queries)
+      const [completedChaptersData, completedQuizzesData] = await Promise.all([
+        allChapterIds.length > 0 ? db.userProgress.findMany({
+          where: {
+            userId,
+            chapterId: { in: allChapterIds },
+            isCompleted: true
+          },
+          select: {
+            chapterId: true
           }
+        }) : Promise.resolve([]),
+        allQuizIds.length > 0 ? db.quizResult.findMany({
+          where: {
+            studentId: userId,
+            quizId: { in: allQuizIds }
+          },
+          select: {
+            quizId: true
+          }
+        }) : Promise.resolve([])
+      ]);
 
-          const completedContent = completedChapters + completedQuizzes;
-          const progress = totalContent > 0 ? (completedContent / totalContent) * 100 : 0;
+      // Create sets for fast lookup
+      const completedChapterIds = new Set(completedChaptersData.map(c => c.chapterId));
+      const completedQuizIds = new Set(completedQuizzesData.map(q => q.quizId));
 
-          return {
-            ...course,
-            progress
-          };
-        })
-      );
+      // Calculate progress for each course using pre-fetched data
+      const coursesWithProgress = courses.map((course) => {
+        const totalChapters = course.chapters.length;
+        const totalQuizzes = course.quizzes.length;
+        const totalContent = totalChapters + totalQuizzes;
+
+        let completedChapters = 0;
+        let completedQuizzes = 0;
+
+        if (course.purchases && course.purchases.length > 0) {
+          // Count from pre-fetched data instead of making new queries
+          completedChapters = course.chapters.filter(ch => completedChapterIds.has(ch.id)).length;
+          completedQuizzes = course.quizzes.filter(q => completedQuizIds.has(q.id)).length;
+        }
+
+        const completedContent = completedChapters + completedQuizzes;
+        const progress = totalContent > 0 ? (completedContent / totalContent) * 100 : 0;
+
+        return {
+          ...course,
+          progress
+        };
+      });
 
       return NextResponse.json(coursesWithProgress);
     }

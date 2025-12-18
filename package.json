@@ -11,6 +11,7 @@
     "prisma:studio": "node scripts/run-prisma-studio.js",
     "prisma:clean-temp": "node scripts/clear-prisma-temp.js",
     "prisma:check-accelerate": "node scripts/check-accelerate.js",
+    "count:recent-users": "node scripts/count-recent-users.js",
     "fix:quiz-options": "node scripts/fix-quiz-options.js",
     "test:quiz-options": "node scripts/test-quiz-options.js",
     "postinstall": "prisma generate"
